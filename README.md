@@ -17,11 +17,11 @@ Ce cours se déroule dans le cadre du master journalisme de l'[Institut Pratique
 | Jour | Module | Thématique | 
 | :-----: | :-----: |  -----: | 
 | 19/10/2020 | Cours01 | Introduction à R et à la programmation | 
-| 19/10/2020 | Cours02 | Récupérer et charger des données | 
-| 19/10/2020 | Cours03 | Nettoyer et manipuler des données | 
-| 19/10/2020 | Cours04 | Analyser des données | 
-| 19/10/2020 | Cours05 | Visualisation | 
-| 19/10/2020 | Cours06 | Introduction à l'analyse exploratoire de données | 
+| 03/11/2020 | Cours02 | Récupérer et charger des données | 
+| 10/11/2020 | Cours03 | Nettoyer et manipuler des données | 
+| 16/11/2020 | Cours04 | Analyser des données | 
+| 23/11/2020 | Cours05 | Visualisation | 
+| 01/12/2020 | Cours06 | Introduction à l'analyse exploratoire de données | 
 
 ------
 
