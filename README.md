@@ -25,11 +25,38 @@ Ce cours se déroule dans le cadre du master journalisme de l'[Institut Pratique
 
 ------
 
+## Installation
+
+**Attention** : les installations doivent être réalisées dans cet ordre, au risque que les programmes ne fonctionnent pas correctement.
+
+### Windows
+1. [dernière version disponible de R base](https://cran.r-project.org/bin/windows/base/) ;
+2. [dernière version disponible de Rstudio](https://rstudio.com/products/rstudio/download/#download)
+3. [Sublime Text 3](https://www.sublimetext.com/3)
+
+### Mac
+1. [dernière version disponible de R base](https://cran.r-project.org/bin/macosx/)
+2. [dernière version disponible de Rstudio](https://rstudio.com/products/rstudio/download/#download)
+3. [Sublime Text 3](https://www.sublimetext.com/3)
+
+### Linux
+(sur demande)
+
+### Packages R
+1. tidyverse ;
+2. data.table ;
+3. devtools ;
+4. rvest.
+
 ## Support
 
 * Cours01 : [R, votre nouvel outil]() (à venir)
 
 ## Bases de données utilisées
+
+### cours01
+
+*à venir*
 
 ## Références
 
