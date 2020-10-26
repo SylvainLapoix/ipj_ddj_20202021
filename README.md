@@ -50,13 +50,12 @@ Ce cours se déroule dans le cadre du master journalisme de l'[Institut Pratique
 
 ## Support
 
-* Cours01 : [R, votre nouvel outil]() (à venir)
+* Cours01 : [R, votre nouvel outil](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours01/#1)
+* Cours02 : à venir.
 
 ## Bases de données utilisées
 
-### cours01
-
-*à venir*
+### cours02
 
 ## Références
 
