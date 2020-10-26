@@ -60,7 +60,13 @@ Ce cours se déroule dans le cadre du master journalisme de l'[Institut Pratique
 
 ## Références
 
+### Généralités sur R
 * [R for datascience](https://r4ds.had.co.nz/) ;
 * [Introduction à R et au tidyverse](https://juba.github.io/tidyverse/) ;
 * les raccourcis claviers de Rstudio : [Keyboard shortcuts, Rstudio](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts) ;
 * quelques "feuilles de triches" des packages R (notamment tidyverse) : [Rstudio Cheat Sheets, Rstudio](https://rstudio.com/resources/cheatsheets/).
+
+### Sur la gestion des fichiers
+* créer un projet sous R, organiser ses fichiers ... [dans la très bonne introduction du parcours de formation à R du Ministère de la Transition énergétique et solidaire ](https://mtes-mct.github.io/parcours-r/m2/bien-commencer.html) ;
+* [le chapitre Organiser ses fichiers](http://larmarange.github.io/analyse-R/organiser-ses-fichiers.html) du tutoriel en ligne Analyse-R créé et maintenu par Joseph Larmarange ;
+* [Organiser ses scripts](https://juba.github.io/tidyverse/05-organiser.html) dans l'Introduction à R et au tidyverse de Julien Barnier, référence en langue française s'il en est.
