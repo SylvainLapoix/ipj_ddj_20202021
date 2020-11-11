@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>IPJ - Datajournalisme</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Sylvain Lapoix" />
+    <meta name="date" content="2020-03-11" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# IPJ - Datajournalisme
+## Cours 2 : Sourcer et lire les données en R
+### Sylvain Lapoix
+### 03/11/2020
+
+---
+
+
+background-image: url("https://media.giphy.com/media/3otOKv1Z6WUpYwHHwI/giphy.gif")
+class: center, top, inverse
+
+# 1. Formats de données
+
+---
+
+### Les grands types de données
+
+Nous pouvons classer les données sous deux grandes catégories, suivant la manière dont elles sont disponibles :
+
+.pull-left[#### les données structurées
+Données dont l'organisation définit les relations au sein d'une base de données.
+
+**Qualité** : lisibles par la machine, compactes, faciles à analyser, manipuler et visualiser ;
+
+**Défaut** : limitées dans leur capacité descriptive, rares, nécessitent un traitement préalables, pas toujours documentées.
+]
+
+.pull-left[#### les données non structurées
+Données ne présentant pas de structure identifiable.
+
+**Qualité** : lisibles par l'oeil humain, très abondantes, très variées, riches d'information ;
+
+**Défaut** : difficilement lisibles par la machine (sauf à passer par du machine learning), nécessitent un important travail de tri et pré traitement, volumineuses, peu qualitatives.
+]
+
+---
+
+### Jouons au jeu du structurée ou non structurée ?
+
+.center[
+![](https://www.m-files.com/blog/wp-content/uploads/2019/09/structured-vs-unstructured-data.png)
+]
+
+---
+
+background-image: url("https://media.giphy.com/media/JPrw5LZ6Qa3D2Eus3K/giphy.gif")
+class: center, top, inverse
+
+## Les données structurées
+
+
+
+---
+
+### Petit exercice pratique
+
+C'est parti :
+* Ouvrez Sublime Text ;
+* Tapez le bloc de texte suivant : `nom,prenom,age`
+* Complétons-le ensemble en gardant la même nomenclature.
+
+--
+
+Puis :
+* Copiez l'intégralité du bloc (Ctrl + A / Ctrl + C) ;
+* Dans votre console R, tapez :
+
+```r
+read.csv(text = "collez votre bloc de texte ici")
+```
+
+Que se passe-t-il ?
+
+---
+
+### Les différents modes de structuration de données
+
+Pour définir les relations entre les données, les différents formats mobilisent deux schémas principaux :
+
+.pull-left[#### La délimitation
+
+Les fichiers délimités utilisent certains signes pour signifier la séparation entre deux types de champs principaux : les cellules et les lignes. Ce sont les formats les plus légers et faciles à lire mais ils s'avèrent limités pour créer des bases de données relationnelles.
+
+Le plus courant est le **CSV** (*comma separated value*) mais on trouvera aussi des TSV, SCSV (parfois appelés abusivement "CSV") et d'autres fantaisies.
+
+
+]
+
+.pull-right[#### Le balisage
+
+Les fichiers balisés reposent sur une double structure :
+* des objets ordonnés en liste ;
+* des pairs "nom" / "valeur" à l'intérieur de chaque objet.
+
+Schématiquement, chaque donnée est "étiquettée" d'un nom partagé avec les données ayant la même fonction dans les autres objets de l'ensemble. Ce qui rend ce type de fichier moins facile à lire par l'oeil humain mais beaucoup plus facile à manier de manière relationnel et peut contenir beaucoup plus de métadonnées.
+
+Les formats les plus courants de ce type sont le **json** et le **xml**.
+]
+
+---
+
+### Critères de choix d'un format de fichier
+
+Tous les formats de fichiers n'ont pas les mêmes avantages. Pour vous aider à mieux comprendre comment arbitrer entre les formats disponibles, voici quelques critères :
+* **interopérabilité** : propension à être réutilisable sans déperdition de données par différents logiciels ;
+* **poids** : espace occupé par la collection de données sur le disque ou le serveur ;
+* **enrichissement** : capacité de stockage de couches supplémentaires de données et de métadonnées ;
+* **licence** : statut du format de fichier sur le plan de la propriété intellectuelle.
+
+--
+
+Car, de même qu'il existe des logiciels propriétaires, il existe des formats propriétaires :
+* **xlsx**, **docx** et **ppt** (entre autres) sont propriétés de Microsoft via Office ;
+* **psd** via Photoshop propriété de Adobe ;
+* **pdf** l'était également jusqu'en 2008 (devenu depuis norme ISO) ;
+* **shp** et ses formats associés (**shx** et cie) sont propriétés d'Esri via le logiciel de cartographie ArcGIS ;
+* etc.
+
+---
+
+#### Le "programme 5 étoiles"
+
+Le format de données n'est pas qu'un enjeu technique : dans une certaine mesure, il s'agit d'une **question politique** en cela que le format choisi déterminant l'accessibilité aux données, il détermine le niveau de transparence pratique d'une organisation.
+
+Dans le cas de l'**open data**, Tim Berners-Lee a schématisé cette relation entre format et ouverture dans sa **[5 stars program](https://5stardata.info/fr/)** :
+
+.center[
+![](https://5stardata.info/images/5-star-steps.png)
+]
+
+---
+
+background-image: url("https://media.giphy.com/media/dBTnKicCH0IiCzbTVM/giphy.gif")
+class: center, top, inverse
+
+## Les données non-structurées
+
+---
+
+Le **scraping** est l'opération consistant à extraire des données d'un format "lisible par l'oeil humain" (*human readable*) pour les rendre "lisibles par la machine" (*machine readable*).
+.pull-left[#### PDF scraping
+
+Il existe deux types de PDF :
+* les PDF textes ;
+* les PDF images.
+
+Dans le premier cas, l'encodage permet de récupérer les caractères et leur disposition pour "réassembler" les tableaux contenus le PDF.
+
+C'est ce que permet [le package `{tabulizer}`](https://github.com/ropensci/tabulizer), que vous pouvez installer direct.
+
+Pour les PDF images, la méthode classique consiste à convertir chaque page en image et passer chaque image par un logiciel d'OCR (*optical character recognition*).
+]
+
+.pull-right[#### HTML scraping
+
+Le HTML scraping s'appuie sur la struture des pages HTML pour constituer des tables. Les librairies ou logiciels lisent les balises des pages web et les ordonnent sous forme de table.
+
+Sous R, le package `{rvest}` permet de scraper des pages web (il s'agira de la 4è partie de ce cours).
+
+.center[
+![](https://github.com/tidyverse/rvest/raw/master/man/figures/logo.png)
+]
+]
+
+---
+
+background-image: url("https://media.giphy.com/media/xT1XGzAnABSXy8DPCU/giphy.gif")
+class: center, top, inverse
+
+# 2. Les sources de données
+
+---
+
+
+background-image: url("https://media.giphy.com/media/l3nWpMnnbQjaXtP7W/giphy.gif")
+class: center, top, inverse
+
+## ça va venir ...
+
+---
+
+background-image: url("https://media.giphy.com/media/ARrQFpc6km5eU/giphy.gif")
+class: center, top, inverse
+
+# 3. Lire des données en R
+
+
+---
+
+
+
+#### R base
+R propose plusieurs fonctions *"natives"* de lecture de données. Faciles à manipuler, bien documentées, elles comportent cependant certains paramètres par défaut qui peuvent être gênants et offrent peu d'option de paramétrage fin. Les plus usuelles sont `read.csv()` (pour les CSV), `read.delim()` (pour les séparateurs exotiques) et `read.table()` (pour les données séparées par des espaces).
+
+
+#### {tidyverse}
+Le `{tidyverse}` propose une large gamme de fonctions de lecture dans le package `{readr}`. Plus rapides que les fonctions de base, les fonctions de `{readr}` offrent également plus de flexibilité au paramétrage et produisent des `tibble`, un format de données très facile à manipuler. **Nous adopterons ces fonctions pour ce cours ainsi que la plupart des outils du `tidyverse`**.
+
+#### data.table
+Le package `{data.table}` propose une approche globale différente au `{tidyverse}`. Nous nous intéresserons ici seulement à sa fonction de lecture des CSV : `fread()` propose une lecture jusqu'à deux fois plus rapide que ses équivalents `{readr}` avec beaucoup moins de plantages et une reconnaissance très efficace des types de données. Une alternative à considérer pour les gros fichiers.
+
+---
+
+### read_csv()
+
+La fonction `read_csv()` permet de lire des données stockées en CSV sous forme de `tibble` (il s'agit en fait d'un cas particlier de `read_delim()`, comme `read_tsv()`).
+
+Cette fonction n'a qu'un seul argument obligatoire : la source des données. Cette source peut être :
+* l'emplacement d'un fichier sur le disque (il s'agira alors d'un path, voire slide suivante) ;
+* l'emplacement d'un fichier sur un serveur (il s'agira alors d'une URL) ;
+* une chaîne de caractère dont les données sont séparées par des virgules (comme dans notre exemple).
+
+Par exemple, vous pouvez charger un CSV publié sur data.gouv.fr (ici [les indicateurs de suivi de l'épidémie de Covid](https://www.data.gouv.fr/fr/datasets/indicateurs-de-suivi-de-lepidemie-de-covid-19/) par le Ministère de la Santé) :
+
+
+```r
+read_csv("https://www.data.gouv.fr/fr/datasets/r/381a9472-ce83-407d-9a64-1b8c23af83df")
+```
+
+```
+## # A tibble: 238 x 5
+##    extract_date tx_incid     R taux_occupation_sae tx_pos
+##    &lt;date&gt;          &lt;dbl&gt; &lt;dbl&gt;               &lt;dbl&gt;  &lt;dbl&gt;
+##  1 2020-03-18      NA       NA                15.2     NA
+##  2 2020-03-19       5.57    NA                19.8     NA
+##  3 2020-03-20       8.40    NA                25.6     NA
+##  4 2020-03-21      11.0     NA                28.7     NA
+##  5 2020-03-22      13.6     NA                33.1     NA
+##  6 2020-03-23      18.3     NA                41.1     NA
+##  7 2020-03-24      23.9     NA                49.5     NA
+##  8 2020-03-25      30.1     NA                58       NA
+##  9 2020-03-26      32.9     NA                66.3     NA
+## 10 2020-03-27      36.9     NA                74.3     NA
+## # … with 228 more rows
+```
+
+
+---
+
+### Aparté : le "path"
+
+Le *path* ou *chemin de fichier* est une chaîne de caractère qui décrit l'emplacement d'un fichier dans un système de fichier, qu'il s'agisse de votre machine ou d'un serveur distant. Il existe deux manières de l'écrire :
+
+Le **chemin absolu** chemin unique et permanent qui donne l'emplacement d'un fichier sur le disque d'où qu'on se trouve. Il part de **la racine**, c'est-à-dire de le dossier contenant tous les autres sur votre système.
+
+Par exemple :
+`"home/user/directory/subdir/file.csv"`
+
+Le **chemin relatif** est un chemin particulier qui dépend de l'endroit *"où l'on se trouve"* sur le disque. Il part de l'emplacement, que l'on nomme le plus souvent **working directory** (pour l'obtenir, vous pouvez entrer `getwd()` dans la console).
+
+En reprenant l'exemple précédent, si nous sommes dans le dossier *directory*, le chemin relatif du fichier *file.csv* sera :
+`"./subdir/file.csv"`.
+
+En maintenant une bonne organisation de vos fichiers, vous pourrez appeler vos fichiers via des chemins relatifs et ainsi améliorer la réutilisabilité et la reproductibilité de vos scripts. **C'est la méthode que nous emploierons systématiquement dans ce cours.**
+
+---
+
+#### La sortie de read_csv()
+
+Pour plus de sécurité, il est souvent préférable de télécharger localement un fichier. Téléchargez le fichier des indicateurs et placez-le dans le dossier *data* de votre projet ou du dossier consacré à ce cours. Puis, chargez-le.
+
+Que pouvons-nous dire de ce qui s'affiche dans la console ?
+
+
+```r
+read_csv("./data/table-indicateurs-open-data-france.csv")
+```
+
+```
+## # A tibble: 230 x 5
+##    extract_date tx_incid     R taux_occupation_sae tx_pos
+##    &lt;date&gt;          &lt;dbl&gt; &lt;dbl&gt;               &lt;dbl&gt;  &lt;dbl&gt;
+##  1 2020-03-18      NA       NA                15.2     NA
+##  2 2020-03-19       5.57    NA                19.8     NA
+##  3 2020-03-20       8.40    NA                25.6     NA
+##  4 2020-03-21      11.0     NA                28.7     NA
+##  5 2020-03-22      13.6     NA                33.1     NA
+##  6 2020-03-23      18.3     NA                41.1     NA
+##  7 2020-03-24      23.9     NA                49.5     NA
+##  8 2020-03-25      30.1     NA                58       NA
+##  9 2020-03-26      32.9     NA                66.3     NA
+## 10 2020-03-27      36.9     NA                74.3     NA
+## # … with 220 more rows
+```
+
+
+---
+
+#### Arguments utiles
+
+Les fonctions `read_\*` proposent de nombreux arguments pour faciliter la lecture. Voici une sélection des plus utiles :
+* **skip** : permet de "sauter" n lignes (n étant un intéger) ;
+* **col_names** : si TRUE (par défault) considère que la première ligne contient le nom des variables, si FALSE considère qu'il ne contient pas le nom des variables, si un vecteur est fourni, considère que ce vecteur contient le nom à donner aux variables ;
+* **col_types** : si une suite de lettre correspondant aux types de données est fourni, permet de détemriner manuellement le type de données pour chaque variable, voire la liste dans l'aide (par défaut le type est imputé sur la base des 1000 premières lignes) ;
+* **na** : permet de lister dans un vecteur les valeurs à lire comme *"valeurs manquantes"* (`#N/A`) ;
+* **delim** : pour la fonction `read_delim()` permet d'indiquer par une chaîne de caractère le séparateur des données.
+
+---
+
+#### Le "locale"
+
+Un paramètre particulier à maîtriser est **locale**: il indique à la fonction quels réglages par défaut doivent être pris en compte pour les conventions variables d'un pays à l'autre. En pratique : format des dates et heures, marqueurs des décimales et milliers, fuseau horaire et surtout encodage des caractères.
+
+C'est ce dernier point qui risque de vous poser le plus de problème : R étant un langage anglosaxon et américano-centré, ses réglages par défaut auront tendance à mal lire les caractères (dits) spéciaux. A commencer par les lettres accentuées.
+
+
+---
+
+### read_excel()
+
+La fonction `read_excel()` du package `{readxl}` (intégré au `{tidyverse}`) permet de lire les fichiers propriétaires de type Excel : **xls** et **xlsx**. Elle prend le même argument de base du path du fichier et impute le type de fichier (xls ou xlsx) par lui-même. Il nécessite en revanche un argument supplémentaire : **sheet** qui spécifie par une chaîne de caractère le nom de la feuille que l'on souhaite importer.
+
+Il vous faudra donc connaître le nom par avance ou, plus probablement, ouvrir le fichier par aileurs pour le renseigner.
+
+Les fichiers Excel étant d'usage courant, il est bon de savoir maîtriser cette fonction au cas où. Par exemple, pour lire [des données issues du projet de loi de finances 2021](https://www.data.gouv.fr/fr/datasets/projet-de-loi-de-finances-pour-2021-plf-2021-donnees-du-plf-et-des-annexes-projet-annuel-de-performance-pap/#_) :
+
+
+```r
+readxl::read_excel("./data/PLF_2021_Liste_des_taxes_affectees.xlsx", sheet = "taxes affectées")
+```
+
+```
+## # A tibble: 287 x 21
+##    `Nature juridiq… ...2  ...3  ...4  `Rattachement d… ...6  `Bénéficiaire d…
+##    &lt;chr&gt;            &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;            &lt;chr&gt; &lt;chr&gt;           
+##  1 Secteur          Caté… Caté… Numé… Mission          Prog… Code            
+##  2 Secteur social   Orga… Régi… &lt;NA&gt;  &lt;NA&gt;             &lt;NA&gt;  124             
+##  3 Secteur social   Orga… Mutu… 3029… &lt;NA&gt;             &lt;NA&gt;  103             
+##  4 Autres bénéfici… Autr… Étab… 4951… &lt;NA&gt;             &lt;NA&gt;  68              
+##  5 Secteur social   Orga… Régi… 1800… &lt;NA&gt;             &lt;NA&gt;  99              
+##  6 Secteur local    Comm… Comm… &lt;NA&gt;  &lt;NA&gt;             &lt;NA&gt;  136             
+##  7 Secteur local    Orga… Orga… &lt;NA&gt;  &lt;NA&gt;             &lt;NA&gt;  31              
+##  8 Secteur social   Orga… Autr… 1800… &lt;NA&gt;             &lt;NA&gt;  117             
+##  9 Secteur social   Orga… Autr… &lt;NA&gt;  &lt;NA&gt;             &lt;NA&gt;  44              
+## 10 Organismes d'ad… Opér… Étab… 5250… Écologie, dével… 203 … 14              
+## # … with 277 more rows, and 14 more variables: ...8 &lt;chr&gt;, `Taxe
+## #   affectée` &lt;chr&gt;, ...10 &lt;chr&gt;, ...11 &lt;chr&gt;, ...12 &lt;chr&gt;, ...13 &lt;chr&gt;,
+## #   ...14 &lt;chr&gt;, ...15 &lt;chr&gt;, ...16 &lt;chr&gt;, ...17 &lt;chr&gt;, ...18 &lt;chr&gt;,
+## #   ...19 &lt;chr&gt;, `Référence juridique` &lt;chr&gt;, ...21 &lt;chr&gt;
+```
+
+
+---
+
+### Renommer ses variables
+
+.pull-left[Les galères habituelles sur lesquelles vous tomberez :
+* nomenclatures administratives illisibles ;
+* noms interminables ;
+* accents dans tous les sens ;
+* pire, des espaces ...
+]
+
+.pull-right[Mes conseils pour renommer vos variables :
+1. des termes clairs (en français ou en anglais) ;
+2. des noms courts ;
+3. aucun accent ;
+4. des "_" pour séparer.
+]
+
+Vous pouvez renommer soit en chargeant (avec **col_names**), soit variables par variables, soit avec la fonction `setNames()`. Je vous recommande la première ou troisième option et, surtout, **je vous conseille de renommer à l'aide d'un vecteur** : cela facilitera le traçage des noms de variable.
+
+
+```r
+read_csv2("./data/sports-prix-moyen-dune-cotisation-sportive-adulte-dans-un-club-sportif.csv") %&gt;% 
+  setNames(c("nom_club","cout_cotisation"))
+```
+
+```
+## # A tibble: 31 x 2
+##    nom_club                                              cout_cotisation
+##    &lt;chr&gt;                                                           &lt;dbl&gt;
+##  1 Issy Gym Vitalité                                                 315
+##  2 Issy les Moulineaux Badminton Club 92                             259
+##  3 Issy les Moulineaux Trampoline et Sports Acrobatiques             370
+##  4 ABIMES                                                             NA
+##  5 Avia Club Athlétisme d'Issy les Moulineaux                        193
+##  6 Football Club d'Issy les Moulineaux                               300
+##  7 Free Touch Rugby                                                  100
+##  8 Entente Pongiste Isséenne                                         275
+##  9 Issy Aventure                                                     170
+## 10 Issy Triathlon                                                    375
+## # … with 21 more rows
+```
+
+---
+
+#### Aparté : le `%&gt;%`
+
+.center[![](https://github.com/tidyverse/magrittr/raw/master/man/figures/logo.png)]
+
+Le `pipe` est un outil de traitement de données introduit via le package `{magrittr}` et qui permet de passer la sortie d'une fonction en premier argument de la suivante.
+
+Il est accessible sous Rstudio par le raccourci *Ctrl / Cmd + Shift + m*.
+
+Cet outil extrêmement pratique permet de *chaîner* des opérations et d'éviter ainsi d'emboîter les fonctions ou (pire) de multiplier les variables à chaque manipulation. Nous développerons plus longuement les intérêts du pipe et la façon de l'utiliser dans les cours03 #suspense.
+
+---
+
+### Quelques conseils
+
+#### Nomenclature
+Pour les manipuler, vous devrez assigner le résultat de la fonction à une variable. Choisissez, autant que possible, un nom simple, lisible et rapide à taper (vous allez le taper très très souvent ...).
+
+#### Données sources
+Conservez toujours le fichier source original de vos données ainsi qu'une version "non modifiée" dans une variable de votre environnement. Vous serez heureux·ses de les retrouver en cas de fausse manip !
+
+#### Comparez avec la lecture d'un autre programme
+Si vous avez un doute sur la fidélité des données à la source, n'hésitez pas à les ouvrir dans un autre logiciel en parallèle. Cela vous permettra également de cmoprendre certains messages d'erreur (qui peuvent souvent être réglé avec un **skip** ou en réglant le **locale**).
+
+#### Renommez avec des vecteurs
+Je l'ai déjà dit mais la pédagogie est affaire de répétition.
+
+---
+
+background-image: url("https://media.giphy.com/media/zx8gxCl62flTO/giphy.gif")
+class: center, top, inverse
+
+# 4. Introduction au scraping en R
+
+---
+
+background-image: url("https://media.giphy.com/media/KP5J5Ss9moWaI/giphy.gif")
+class: center, top, inverse
+
+## Notions de base du scraping en HTML
+
+
+---
+
+### Rapide introduction au HTML
+
+Le HTML a pour fonction de décrire la structure d'une page web : quand vous ouvrez une page sur Internet (que ce soit en entrant son URL ou en cliquant sur un lien), une requête est envoyée à un serveur qui, en réponse, fourni un fichier HTML correspondant à la page demandée.
+
+Un fichier HTML contient donc un nombre limité d'information : texte, mise en forme, structure de la page, disposition des photos, alignements, couleurs, style ... tout le reste (notamment les contenus multimédias et les feuilles de style), le HTML ne peut que les "appeler" en mentionnant leur emplacement (souvent, une autre URL).
+
+Le HTML fonctionne par un système de balisage, c'est-à-dire une série de codes indiquant le début et la fin de l'application d'un style ou d'une propriété.
+
+
+```r
+&lt;strong&gt;Ce texte sera en gras&lt;/strong&gt;
+```
+
+Certaines balises sont dîtes "autofermantes", c'est-à-dire qu'elles ouvrent et ferment la propriété en même temps. Par exemple :
+
+
+```r
+&lt;img href="mon-image-sur-internet.png"&gt; # fera apparaître une image
+```
+
+
+
+---
+
+### Se balader dans le HTML
+
+.pull-left[#### Via le code source
+
+Tous les navigateurs donnent accès au **code source** de la page, c'est-à-dire au contenu brut du fichier HTML. Ce contenu peut être parcouru, lu, recherche et même téléchargé. Pour y accéder, cliquez droit ou utilisez le raccourci (`Ctrl / Cmd + u` pour Firefox) :
+
+![](./img/code_source.png)
+]
+
+
+.pull-right[#### Via l'inspecteur
+
+Il est également possible de consulter à la partie du code source concernant un élément donnée de la page. Pour cela, les navigateurs proposent un **inspecteur**. Cliquez droit sur un élément et choisissez *"Examiner"* : une barre va alors apparaître en bas de la page contenant les informations relatives à l'élément que vous avez pointé.
+
+![](./img/inspecteur_web.png)
+]
+
+---
+
+### Quelques balises clefs
+
+Deux types de balises vont nous intéresser particulièrement dans le HTML :
+
+.pull-left[#### Les balises de HTML table
+Le HTML permettant de mettre en forme, il est souvent utilisé pour structurer des tables et, par conséquent, contenir des données sous forme tabulaire.
+
+Trois balises structurent une table :
+1. `&lt;table&gt;` : ouvre la table  (elle marque le début du tableau) ;
+2. `&lt;tr&gt;` : pour *table row* marque le début d'une ligne ;
+3. `&lt;td&gt;` : pour *table data* marque le début d'une cellule.
+
+Le HTML code donc une table comme : des cellules, à l'intérieur de lignes, à l'intérieur de tables.
+]
+
+.pull-right[#### Les balises liens
+
+Comme son nom l'indique, le HTML repose sur le principe de l'*hypertexte*. Images, vidéos, liens, sons, etc. sont *"référencés"* dans les balises, souvent comme attribut (c'est-à-dire paramètre de la balise).
+
+La balise `&lt;a&gt;` qui sert à ajouter un lien hypertexte fonctionne ainsi :
+
+
+```r
+&lt;a href="www.url-du-lien.html"&gt;Texte&lt;/a&gt;
+```
+
+Il est courant de récupérer l'attribut `href` en parallèle du contenu de la balise pour constituer une bases de données scrapées depuis une page web.
+]
+---
+
+background-image: url("https://media.giphy.com/media/fteuziV4qzK62ctmLN/giphy.gif")
+class: center, top, inverse
+
+## {rvest}
+
+---
+
+### Le "pipeline" rvest
+
+Le scraping avec `{rvest}` se déroule en plusieurs étapes qui nécessite chacune des fonctions différentes. Nous nous concentrerons sur des opérations de scraping simple :
+* le scraping de tables HTML ;
+* la récupération de données structurées par des attributs.
+
+Nous pouvons résumer le *"pipeline"* à trois opérations simples :
+1. la récupération de la page html avec `read_html()` : où l'on récupère le contenu brut de la page HTML cible afin de le traiter ;
+2. le ciblage des balises avec `html_nodes()` : où l'on spécifie le chemin des éléments qui nous intéressent dans la page ;
+3. le traitement : facultatif, il consistera par exemple à lire une table HTML ou à extraire le texte à l'intérieur d'une balise.
+
+.footnote[Il existe beaucoup d'autres pipelines possibles et de fonctions disponibles dans `{rvest}`, je vous renvoie [à la doc](https://rvest.tidyverse.org/) pour les explorer.]
+
+---
+
+#### Lire le HTML
+
+La fonction `read_html()` récupère le contenu brut d'une page HTML à partrir d'une URL (ou d'un fichier HTML ou XML).
+
+Il doit ensuite être traité pour en extraire les données souhaitées.
+
+#### Rappel :
+Si vous ne stockez pas la sortie de `read_html()` dans une variable, vous devrez faire une requête à chaque fois.
+
+
+```r
+read_html("https://www.ipj.eu/parcours-des-anciens/")
+```
+
+```
+## {html_document}
+## &lt;html lang="fr-FR"&gt;
+## [1] &lt;head&gt;\n&lt;script type="text/javascript"&gt;var ajaxurl = "https://www.ipj.eu/ ...
+## [2] &lt;body class="page-template-default page page-id-144 loading ehf-footer eh ...
+```
+
+Nous avons donc quatre éléments :
+1. le format du fichier ;
+2. la langue ;
+3. la balise head ;
+4. la balise body (où nous allons fouiller la plupart du temps)
+
+---
+
+### Aparté : le xPath
+
+Comme son nom l'indique, le **[xPath](https://www.w3schools.com/xml/xpath_intro.asp)** sert à décrire un *chemin*Le xPath permet de cibler des "noeuds" dans un document HTML (ou XML) en décrivant leur situation hiérarchique ou leurs attributs.
+
+.center[
+#### (très) Rapide lexique
+]
+.pull-left[**`//` = *"n'importe où"*.** &lt;/br&gt;Exemple : `"//a"` = *"une balise a n'importe où dans la page"* ;
+
+**`/` = *"en dessous / à l'intérieur"*.** &lt;/br&gt;Exemple : `"//a/span"` = *"une balise span dans une balise a"*
+
+**`[@att = 'value]` = *"dont l'attribut att a pour valeur value"*.**
+&lt;/br&gt;Exemple : `"//div[@class='info']"` = *"n'importe quelle balise div dont l'attribut class a pour valeur info"*
+]
+
+.pull-right[**`[n]` = *"la nème occurence"*.** &lt;/br&gt;Exemple : `"//a/span[3]"` = *"la 3è balise span dans une balise a"*
+
+Il existe aussi des fonctions telles que :&lt;/br&gt;
+**`[starts_with('v', @att)]` = *"dont la valeur de l'attribut att commence par v"*.**
+&lt;/br&gt;Exemple : `"//img[starts_with('def', @id)]"` = *"n'importe quelle balise img dont la valeur de l'attribut id commence par def"*
+
+]
+
+---
+
+#### Cibler les bonnes nodes
+
+Une fois le HTML récupéré, vous allez pouvoir le traiter en indiquant le *chemin* des balises qui vous intéressent.
+
+Pour cela, il va vous falloir :
+* repérer dans le code source ou via l'inspecteur les balises à cibler et leurs attributs ;
+* les traduire en requête, soit xPath, soit CSS selector.
+
+Nous privilégierons le xPath (parce que c'est celui que je connais le mieux).
+
+Pour récupérer uniquement le contenu correspondant à notre recherche, nous passerons la sortie de `read_html()` à la fonction `html_nodes()` qui prend un argument principal : `css = "path"` ou `xpath = "path"`.
+
+
+```r
+read_html("https://www.ipj.eu/parcours-des-anciens/") %&gt;% 
+  html_nodes(xpath = "//a[@class='team-member-name']")
+```
+
+```
+## {xml_nodeset (23)}
+##  [1] &lt;a class="team-member-name" href="https://www.ipj.eu/team/bertrand-hoche ...
+##  [2] &lt;a class="team-member-name" href="https://www.ipj.eu/team/camille-grenu/ ...
+##  [3] &lt;a class="team-member-name" href="https://www.ipj.eu/team/caroline-laure ...
+##  [4] &lt;a class="team-member-name" href="https://www.ipj.eu/team/catherine-chab ...
+##  [5] &lt;a class="team-member-name" href="https://www.ipj.eu/team/cecile-megie/" ...
+##  [6] &lt;a class="team-member-name" href="https://www.ipj.eu/team/dominique-tenz ...
+##  [7] &lt;a class="team-member-name" href="https://www.ipj.eu/team/dorothee-ollie ...
+##  [8] &lt;a class="team-member-name" href="https://www.ipj.eu/team/eric-nahon/"&gt;\ ...
+##  [9] &lt;a class="team-member-name" href="https://www.ipj.eu/team/faiza-zerouala ...
+## [10] &lt;a class="team-member-name" href="https://www.ipj.eu/team/francois-xavie ...
+## [11] &lt;a class="team-member-name" href="https://www.ipj.eu/team/gerard-davet/" ...
+## [12] &lt;a class="team-member-name" href="https://www.ipj.eu/team/hakim-kasmi/"&gt; ...
+## [13] &lt;a class="team-member-name" href="https://www.ipj.eu/team/hamdam-mostafa ...
+## [14] &lt;a class="team-member-name" href="https://www.ipj.eu/team/jerome-tichit/ ...
+## [15] &lt;a class="team-member-name" href="https://www.ipj.eu/team/laurence-vigno ...
+## [16] &lt;a class="team-member-name" href="https://www.ipj.eu/team/lucie-barbarin ...
+## [17] &lt;a class="team-member-name" href="https://www.ipj.eu/team/nicolas-herbea ...
+## [18] &lt;a class="team-member-name" href="https://www.ipj.eu/team/olivier-delacr ...
+## [19] &lt;a class="team-member-name" href="https://www.ipj.eu/team/quentin-pommie ...
+## [20] &lt;a class="team-member-name" href="https://www.ipj.eu/team/romain-lejeune ...
+## ...
+```
+
+---
+
+
+#### Récupérer le contenu 1/3 : le texte
+
+Troisième et dernière étape : il vous faut traiter le contenu de la node.
+
+Pour cela, `{rvest}` offre des fonctions de *parsing* qui vont récupérer des parties spécifiques dans les balises ciblées par `html_nodes()`. Nous évoquerons les trois plus usuelles qui visent à récupérer le texte, la valeur d'un attribut ou une table HTML.
+
+`html_text()` permet de récupérer le contenu textuel à l'intérieur de la balise ciblée par HTML nodes.
+
+Pour éviter de récupérer les éléments de mise en forme, il vous suffit d'ajouter l'argument `trim` avec la valeur `TRUE` :
+
+
+```r
+read_html("https://www.ipj.eu/parcours-des-anciens/") %&gt;% 
+  html_nodes(xpath = "//a[@class='team-member-name']") %&gt;% 
+  html_text(trim = TRUE)
+```
+
+```
+##  [1] "Bertrand Hochet"        "Camille Grenu"          "Caroline Laurent Simon"
+##  [4] "Catherine Chabaud"      "Cécile Mégie"           "Dominique Tenza"       
+##  [7] "Dorothée Ollieric"      "Eric Nahon"             "Faiza Zérouala"        
+## [10] "François-Xavier Pietri" "Gérard Davet"           "Hakim Kasmi"           
+## [13] "Hamdam Mostafavi"       "Jérôme Tichit"          "Laurence Vignon"       
+## [16] "LUCIE BARBARIN"         "Nicolas Herbeaux"       "Olivier Delacroix"     
+## [19] "Quentin Pommier"        "Romain Lejeune"         "Steven Bellery"        
+## [22] "Sylvain Lapoix"         "Thuy-Diep Nguyen"
+```
+
+---
+
+#### Récupérer le contenu 2/3 : la valeur d'un attribut
+
+`html_attr()` permet quant à lui de récupérer la valeur d'un attribut. C'est particulièrement utile pour les liens ou adresses d'image (via l'attribut `href`) mais cela peut aussi servir à récupérer des informations stockées dans le code (description alternative, style, etc.).
+
+Pour le configurer, il suffit de spécifier pour valeur de l'argument `name` le nom de l'attribut visé :
+
+
+```r
+read_html("https://www.ipj.eu/parcours-des-anciens/") %&gt;% 
+  html_nodes(xpath = "//a[@class='team-member-name']") %&gt;% 
+  html_attr(name = "href")
+```
+
+```
+##  [1] "https://www.ipj.eu/team/bertrand-hochet/"       
+##  [2] "https://www.ipj.eu/team/camille-grenu/"         
+##  [3] "https://www.ipj.eu/team/caroline-laurent/"      
+##  [4] "https://www.ipj.eu/team/catherine-chabaud/"     
+##  [5] "https://www.ipj.eu/team/cecile-megie/"          
+##  [6] "https://www.ipj.eu/team/dominique-tenza/"       
+##  [7] "https://www.ipj.eu/team/dorothee-ollieric/"     
+##  [8] "https://www.ipj.eu/team/eric-nahon/"            
+##  [9] "https://www.ipj.eu/team/faiza-zerouala/"        
+## [10] "https://www.ipj.eu/team/francois-xavier-pietri/"
+## [11] "https://www.ipj.eu/team/gerard-davet/"          
+## [12] "https://www.ipj.eu/team/hakim-kasmi/"           
+## [13] "https://www.ipj.eu/team/hamdam-mostafavi/"      
+## [14] "https://www.ipj.eu/team/jerome-tichit/"         
+## [15] "https://www.ipj.eu/team/laurence-vignon/"       
+## [16] "https://www.ipj.eu/team/lucie-barbarin/"        
+## [17] "https://www.ipj.eu/team/nicolas-herbeaux/"      
+## [18] "https://www.ipj.eu/team/olivier-delacroix/"     
+## [19] "https://www.ipj.eu/team/quentin-pommier/"       
+## [20] "https://www.ipj.eu/team/romain-lejeune/"        
+## [21] "https://www.ipj.eu/team/steven-bellery/"        
+## [22] "https://www.ipj.eu/team/sylvain-lapoix/"        
+## [23] "https://www.ipj.eu/team/thuy-diep-nguyen/"
+```
+
+
+---
+
+#### Récupérer le contenu 3/3 : une table HTML
+
+Pour récupérer une table HTML, il suffit de cibler la node `//table` (avec éventuellement quelques précisions pour récupérer la bonne table).
+
+Ensuite, vous pourrez passer la sortie à la fonction `html_table()` qui va convertir (ou *parser*) la structure de table HTML en data.frame qui sera dès lors utilisable comme une base de données classique.
+
+Parmi les arguments utiles de `html_table()`, notons :
+* `header` (booléen) qui vous permet de spécifier si la table comporte une têtière ou non ;
+* `dec` qui permet de spécifier le marquer des décimales.
+
+
+```r
+read_html("https://en.wikipedia.org/wiki/List_of_political_and_geographic_subdivisions_by_total_area_from_5,000_to_7,000_square_kilometers") %&gt;%
+  html_nodes(xpath = "//table[@class='sortable wikitable']") %&gt;% html_table(header = TRUE)
+```
+
+```
+## [[1]]
+##                Geographic entity Area (km2)
+## 1              Cornwallis Island      6,995
+## 2                         Vienne      6,990
+## 3                 Uppsala County      6,989
+## 4         Prince of Wales Island      6,675
+## 5              Chumphon Province      6,947
+## 6               Giresun Province      6,934
+## 7                Argyll and Bute      6,930
+## 8        Alpes-de-Haute-Provence      6,925
+## 9               Yên Bái Province   6,899.50
+## 10               Burdur Province      6,887
+## 11           Bình Phước Province   6,883.40
+## 12                 Côtes-d'Armor      6,878
+## 13             Charente-Maritime      6,864
+## 14                  Argeș County      6,862
+## 15                       Cumbria      6,824
+## 16                      Morbihan      6,823
+## 17                        Nièvre      6,817
+## 18              Loire-Atlantique      6,815
+## 19                     Matagalpa      6,804
+## 20              Fergana Province      6,800
+## 21               Vysočina Region   6,795.56
+## 22                         Indre      6,791
+## 23               Akwa Ibom State      6,788
+## 24             Mtskheta-Mtianeti      6,786
+## 25                         Åland      6,784
+## 26                        Loiret      6,775
+## 27               Ille-et-Vilaine      6,775
+## 28                Saida Province      6,764
+## 29                      Santarém      6,747
+## 30      Sancti Spíritus Province      6,737
+## 31                     Finistère      6,733
+## 32          Uthai Thani Province      6,730
+## 33             Cao Bằng Province   6,724.60
+## 34                        Vendée      6,720
+## 35                  Mureş County      6,714
+## 36                       Shimane   6,708.24
+## 37               Bitlis Province      6,707
+## 38     Banteay Meanchey Province      6,679
+## 39                Castelo Branco      6,675
+## 40                   Cluj County      6,674
+## 41           Ngöbe-Buglé Comarca      6,673
+## 42                 Pas-de-Calais      6,671
+## 43                 Davao del Sur   6,667.06
+## 44               Negeri Sembilan      6,645
+## 45               Harghita County      6,639
+## 46                  Bacău County      6,621
+## 47                      Bragança      6,608
+## 48                  Thiès Region      6,601
+## 49            Sukhothai Province      6,596
+## 50            Gümüşhane Province      6,575
+## 51             Kırşehir Province      6,570
+## 52                         Devon      6,561
+## 53           Kırklareli Province      6,550
+## 54          Phitsanulok Province      6,539
+## 55                         Drôme      6,530
+## 56           Smallwood Reservoir      6,527
+## 57             Đắk Nông Province   6,516.90
+## 58                         Leyte   6,515.05
+## 59                Sétif Province      6,504
+## 60              Stockholm County      6,488
+## 61                     Chontales      6,481
+## 62          Blagoevgrad Province      6,478
+## 63             Chiriquí Province      6,477
+## 64                       Imereti      6,448
+## 65                      Delaware      6,447
+## 66         Dumfries and Galloway      6,439
+## 67               Paktia Province      6,432
+## 68            Samtskhe-Javakheti      6,412
+## 69                       Tochigi   6,408.09
+## 70                  Lake Turkana      6,405
+## 71                          Pest      6,393
+## 72                  Siple Island      6,390
+## 73              Lào Cai Province   6,383.90
+## 74            Las Tunas Province      6,373
+## 75  Prachuap Khiri Khan Province      6,368
+## 76           Guantánamo Province      6,366
+## 77                         Gunma   6,362.28
+## 78                 Graham Island      6,361
+## 79           Kiên Giang Province   6,348.30
+## 80     Santiago de Cuba Province      6,343
+## 81                  Loir-et-Cher      6,343
+## 82                  Ebonyi State      6,342
+## 83                          Ōita   6,340.71
+## 84           Chaiyaphum Province      6,338
+## 85          Phatthalung Province      6,335
+## 86                 Reindeer Lake      6,330
+## 87                 Aberdeenshire      6,318
+## 88                 Haute-Garonne      6,309
+## 89              Maramureș County      6,304
+## 90            Västmanland County      6,302
+## 91               Xorazm Province      6,300
+## 92                Seine-Maritime      6,278
+## 93               Edirne Province      6,276
+## 94                          Gers      6,257
+## 95                      Los Ríos      6,254
+## 96        Samegrelo-Zemo Svaneti      6,242
+## 97                   Alba County      6,242
+## 98           Phetchabun Province      6,225
+## 99             Tekirdağ Province      6,218
+## 100                      Moselle      6,216
+## 101                    Lake Eyre      6,216
+## 102                        Meuse      6,211
+## 103                  Haute-Marne      6,211
+## 104                  Hajdú-Bihar      6,211
+## 105           Gaziantep Province      6,207
+## 106                       Sarthe      6,206
+## 107             Jackson Purchase      6,202
+## 108                  New Siberia      6,201
+## 109               Lake Issyk-Kul      6,200
+## 110                Loei Province      6,200
+## 111                        Bokeo      6,196
+## 112                        Somme      6,170
+## 113                        Somme      6,170
+## 114     Oddar Meancheay Province      6,158
+## 115                County Galway      6,148
+## 116                         Aude      6,139
+## 117               Indre-et-Loire      6,127
+## 118                    Yamaguchi   6,112.30
+## 119              Chimbu Province      6,112
+## 120     Everglades National Park      6,110
+## 121           Colonia Department      6,106
+## 122                         Orne      6,103
+## 123                 Buzău County      6,103
+## 124                      Hérault      6,101
+## 125                     Maritime      6,100
+## 126          Quảng Ninh Province   6,099.00
+## 127                      Ibaraki   6,097.06
+## 128                        Idlib      6,097
+## 129                   Portalegre      6,065
+## 130          Södermanland County      6,061
+## 131                     Auckland      6,059
+## 132                        Samar   6,048.03
+## 133                         Eure      6,040
+## 134           Bình Định Province   6,039.60
+## 135                       Somogy      6,036
+## 136                       Savoie      6,028
+## 137             Hà Tĩnh Province   6,026.50
+## 138                    Palestine      6,020
+## 139     Mentawai Islands Regency   6,011.35
+## 140           Chon Buri Province      6,009
+## 141                         Aube      6,004
+## 142                Ordu Province      6,001
+## 143                   Lake Urmia      6,001
+## 144                Dongting Lake      6,000
+## 145                  Deux-Sèvres      5,999
+## 146              El Oro Province      5,988
+## 147              Parwan Province      5,974
+## 148             Plovdiv Province      5,973
+## 149                          Var      5,973
+## 150      Ciego de Ávila Province      5,962
+## 151              Canton of Berne      5,959
+## 152                Andros Island      5,957
+## 153                     Charente      5,956
+## 154             Mascara Province      5,941
+## 155                       Manche      5,938
+## 156       Szabolcs-Szatmár-Bereg      5,936
+## 157                 Lincolnshire      5,921
+## 158               Seine-et-Marne      5,915
+## 159            Zamboanga del Sur   5,914.16
+## 160            Đồng Nai Province   5,903.90
+## 161                 Neamţ County      5,896
+## 162                 Eure-et-Loir      5,880
+## 163                       Vosges      5,874
+## 164         Tuyên Quang Province   5,870.40
+## 165           Occidental Mindoro   5,865.71
+## 166               Sinop Province      5,862
+## 167                         Oise      5,860
+## 168                      Corrèze      5,857
+## 169                         Gard      5,853
+## 170             Distrito Federal      5,802
+## 171                  Ekiti State      5,797
+## 172             Teleorman County      5,790
+## 173                          Mie   5,774.40
+## 174                       Brunei      5,765
+## 175              Melville Island      5,765
+## 176                Vâlcea County      5,765
+## 177                          Ain      5,762
+## 178                         Tarn      5,758
+## 179                  Nueva Ecija   5,751.33
+## 180                         Nord      5,743
+## 181                       Cantal      5,726
+## 182                 Lake Torrens      5,698
+## 183                        Ehime   5,676.11
+## 184               Davao Oriental   5,670.07
+## 185              Havana Province      5,669
+## 186         Prince Edward Island      5,660
+## 187          Chimborazo Province      5,637
+## 188                         Bali      5,633
+## 189                        Békés      5,631
+## 190                  Gorj County      5,602
+## 191                    Rivercess      5,594
+## 192                   Vanua Levu      5,587
+## 193                  County Mayo      5,585
+## 194         Jász-Nagykun-Szolnok      5,582
+## 195             Ardahan Province      5,576
+## 196                       Creuse      5,565
+## 197            Wellington Island      5,556
+## 198                   As-Suwayda      5,550
+## 199                 Hautes-Alpes      5,549
+## 200                     Calvados      5,548
+## 201                       Vänern      5,545
+## 202                   Govisümber      5,540
+## 203                      Ardèche      5,529
+## 204     Kampong Chhnang Province      5,521
+## 205              Amasya Province      5,520
+## 206                 Haute-Vienne      5,520
+## 207                       Guarda      5,518
+## 208       Nakhon Pathom Province      5,513
+## 209                 Coats Island      5,498
+## 210                   Olt County      5,498
+## 211                  Iaşi County      5,476
+## 212             Western Province      5,475
+## 213               Aguascalientes      5,471
+## 214            Nevşehir Province      5,467
+## 215                Camarines Sur   5,465.26
+## 216               Halland County      5,454
+## 217                   Pangasinan   5,451.08
+## 218                 Sibiu County      5,432
+## 219     Moravian-Silesian Region   5,426.83
+## 220                Alytus County      5,425
+## 221                      Liguria      5,421
+## 222               Siirt Province      5,406
+## 223               Hatay Province      5,403
+## 224            Lake Winnipegosis      5,403
+## 225             Chichagof Island      5,388
+## 226              Negros Oriental   5,385.53
+## 227                      Norfolk      5,372
+## 228                Brașov County      5,363
+## 229               Lot-et-Garonne      5,361
+## 230                  Haute-Saône      5,360
+## 231          Suphanburi Province      5,358
+## 232       Bistriţa-Năsăud County      5,355
+## 233                  Guadalcanal      5,353
+## 234                    Lika-Senj      5,353
+## 235            Buri Ram Province      5,351
+## 236              Ibb Governorate      5,350
+## 237         Gegharkunik Province      5,348
+## 238                Uşak Province      5,341
+## 239                  Guadalcanal      5,336
+## 240        Ústí nad Labem Region   5,334.52
+## 241              Cà Mau Province   5,331.70
+## 242                         Cebu   5,331.07
+## 243                    Cantabria      5,321
+## 244                Vaslui County      5,318
+## 245            Perth and Kinross      5,311
+## 246                  Lake Albert      5,299
+## 247        Mae Hong Son Province      5,292
+## 248            Cotopaxi Province      5,287
+## 249                 South Aegean      5,286
+## 250               Olomouc Region   5,266.57
+## 251         Amund Ringnes Island      5,255
+## 252               Sultan Kudarat   5,251.34
+## 253           Meurthe-et-Moselle      5,246
+## 254               Zou Department      5,243
+## 255                        Doubs      5,234
+## 256                     Ardennes      5,229
+## 257                       Valais      5,224
+## 258            Istanbul Province      5,220
+## 259           Khánh Hòa Province   5,217.60
+## 260                          Lot      5,217
+## 261              Klaipėda County      5,209
+## 262                        Powys      5,204
+## 263          Ratchaburi Province      5,197
+## 264                    Comayagua      5,196
+## 265                       Colima      5,191
+## 266                      Mayenne      5,175
+## 267                        Aichi   5,172.48
+## 268                       Lozère      5,167
+## 269             Grand Cape Mount      5,162
+## 270                        Chiba   5,157.65
+## 271    Bolshoy Lyakhovsky Island      5,157
+## 272          Quảng Ngãi Province   5,152.70
+## 273            Flores Department      5,144
+## 274                         León      5,138
+## 275                    Imo State      5,135
+## 276          St. Lawrence Island      5,135
+## 277          Trinidad and Tobago      5,130
+## 278                 Kvemo Kartli      5,122
+## 279                   Lake Mweru      5,120
+## 280          North-East District      5,120
+## 281                Santa Bárbara      5,115
+## 282                    River Gee      5,113
+## 283                Riesco Island      5,100
+## 284            Sirdaryo Province      5,100
+## 285              Călăraşi County      5,088
+## 286             Bouches-du-Rhône      5,087
+## 287                      Edgeøya      5,073
+## 288              Nettilling Lake      5,066
+## 289      Thừa Thiên–Huế Province   5,065.30
+## 290                      Setúbal      5,064
+## 291             Phú Yên Province   5,060.60
+## 292        Mackenzie King Island      5,048
+## 293                     La Rioja      5,045
+## 294                 Korçë County      5,044
+## 295             Middlesex County    5,041.9
+## 296               Northumberland      5,026
+## 297                     Trinidad      5,009
+## 298                        Viseu      5,007
+## 299                      Caviana      5,000
+##                                                                                                           Notes
+## 1                                                                             Island in the Arctic Archipelago.
+## 2                                                                                         Department of France.
+## 3                                                                                             County of Sweden.
+## 4                                                                      Island part of the U.S. state of Alaska.
+## 5                                                                                         Province of Thailand.
+## 6                                                                                           Province of Turkey.
+## 7                                                                  Second largest unitary district of Scotland.
+## 8                                                                                         Department of France.
+## 9                                                                                          Province of Vietnam.
+## 10                                                                                          Province of Turkey.
+## 11                                                                                         Province of Vietnam.
+## 12                                                                                        Department of France.
+## 13                                                                                        Department of France.
+## 14                                                                                           County of Romania.
+## 15                                                             Second largest administrative county of England.
+## 16                                                                                        Department of France.
+## 17                                                                                        Department of France.
+## 18                                                                                        Department of France.
+## 19                                                                                         Region of Nicaragua.
+## 20                                                                                      Province of Uzbekistan.
+## 21                                                                                Region of the Czech Republic.
+## 22                                                                                        Department of France.
+## 23                                                                                            State of Nigeria.
+## 24                                                                             Third largest region of Georgia.
+## 25                                                                                Autonomous island of Finland.
+## 26                                                                                        Department of France.
+## 27                                                                                        Department of France.
+## 28                                                                                         Province of Algeria.
+## 29                                                                                        District of Portugal.
+## 30                                                                                            Province of Cuba.
+## 31                                                                                        Department of France.
+## 32                                                                                        Province of Thailand.
+## 33                                                                                         Province of Vietnam.
+## 34                                                                                        Department of France.
+## 35                                                                                           County of Romania.
+## 36                                                                                         Prefecture of Japan.
+## 37                                                                                          Province of Turkey.
+## 38                                                                                        Province of Cambodia.
+## 39                                                                                        District of Portugal.
+## 40                                                                                           County of Romania.
+## 41                                                                                          Province of Panama.
+## 42                                                                                        Department of France.
+## 43                                         Province of the Philippines; includes the independent city of Davao.
+## 44                                                                                           State of Malaysia.
+## 45                                                                                           County of Romania.
+## 46                                                                                           County of Romania.
+## 47                                                                                        District of Portugal.
+## 48                                                                                           Region of Senegal.
+## 49                                                                                        Province of Thailand.
+## 50                                                                                          Province of Turkey.
+## 51                                                                                          Province of Turkey.
+## 52                                                              Third largest administrative county of England.
+## 53                                                                                          Province of Turkey.
+## 54                                                                                        Province of Thailand.
+## 55                                                                                        Department of France.
+## 56                                                                                              Lake in Canada.
+## 57                                                                                         Province of Vietnam.
+## 58                          Province of the Philippines; includes the independent cities of Ormoc and Tacloban.
+## 59                                                                                         Province of Algeria.
+## 60                                                                                            County of Sweden.
+## 61                                                                                         Region of Nicaragua.
+## 62                                                                          Third largest province of Bulgaria.
+## 63                                                                                          Province of Panama.
+## 64                                                                                           Region of Georgia.
+## 65                                                                                  State of the United States.
+## 66                                                                  Third largest unitary district of Scotland.
+## 67                                                                                     Province of Afghanistan.
+## 68                                                                                           Region of Georgia.
+## 69                                                                                         Prefecture of Japan.
+## 70                                                                                               Lake in Kenya.
+## 71                                                                             Third largest county of Hungary.
+## 72                                                                                   Island part of Antarctica.
+## 73                                                                                         Province of Vietnam.
+## 74                                                                                            Province of Cuba.
+## 75                                                                                        Province of Thailand.
+## 76                                                                                            Province of Cuba.
+## 77                                                                                         Prefecture of Japan.
+## 78                                                      Island in the Haidwa Gwaii archipelago, part of Canada.
+## 79                                                                                         Province of Vietnam.
+## 80                                                                                            Province of Cuba.
+## 81                                                                                        Department of France.
+## 82                                                                                            State of Nigeria.
+## 83                                                                                         Prefecture of Japan.
+## 84                                                                                        Province of Thailand.
+## 85                                                                                        Province of Thailand.
+## 86                                                                                              Lake in Canada.
+## 87                                                                                Unitary district of Scotland.
+## 88                                                                                        Department of France.
+## 89                                                                                           County of Romania.
+## 90                                                                                            County of Sweden.
+## 91                                                                                      Province of Uzbekistan.
+## 92                                                                                        Department of France.
+## 93                                                                                          Province of Turkey.
+## 94                                                                                        Department of France.
+## 95                                                                                         Province of Ecuador.
+## 96                                                                                           Region of Georgia.
+## 97                                                                                           County of Romania.
+## 98                                                                                        Province of Thailand.
+## 99                                                                                          Province of Turkey.
+## 100                                                                                       Department of France.
+## 101                                                                                    Lake in South Australia.
+## 102                                                                                       Department of France.
+## 103                                                                                       Department of France.
+## 104                                                                                          County of Hungary.
+## 105                                                                                         Province of Turkey.
+## 106                                                                                       Department of France.
+## 107                                               Eight Kentucky counties purchased from the Chickasaw Indians.
+## 108                                        Island part of the New Siberian Islands archipelago, part of Russia.
+## 109                                                                                         Lake in Kyrgyzstan.
+## 110                                                                                       Province of Thailand.
+## 111                                                                           Second smallest province of Laos.
+## 112                                                                                       Department of France.
+## 113                                                                                       Department of France.
+## 114                                                                                       Province of Cambodia.
+## 115       The second largest county in the Republic of Ireland, the largest county in the province of Connacht.
+## 116                                                                                       Department of France.
+## 117                                                                                       Department of France.
+## 118                                                                                        Prefecture of Japan.
+## 119                                                                               Province of Papua New Guinea.
+## 120                                                                          Park in the U.S. state of Florida.
+## 121                                                                                      Department of Uruguay.
+## 122                                                                                       Department of France.
+## 123                                                                                          County of Romania.
+## 124                                                                                       Department of France.
+## 125                                                                                    Smallest region of Togo.
+## 126                                                                                        Province of Vietnam.
+## 127                                                                                        Prefecture of Japan.
+## 128                                                                                       Governorate of Syria.
+## 129                                                                                       District of Portugal.
+## 130                                                                                           County of Sweden.
+## 131                                                                      Second smallest region of New Zealand.
+## 132                                                                                Province of the Philippines.
+## 133                                                                                       Department of France.
+## 134                                                                                        Province of Vietnam.
+## 135                                                                                          County of Hungary.
+## 136                                                                                       Department of France.
+## 137                                                                                        Province of Vietnam.
+## 138                              Territory in the Middle East; figure consists of the West Bank and Gaza Strip.
+## 139                                                                         Chain of islands part of Indonesia.
+## 140                                                                                       Province of Thailand.
+## 141                                                                                       Department of France.
+## 142                                                                                         Province of Turkey.
+## 143                                                                                               Lake in Iran.
+## 144                                                                                              Lake in China.
+## 145                                                                                       Department of France.
+## 146                                                                                        Province of Ecuador.
+## 147                                                                                    Province of Afghanistan.
+## 148                                                                                       Province of Bulgaria.
+## 149                                                                                       Department of France.
+## 150                                                                                           Province of Cuba.
+## 151                                                                       Second largest canton of Switzerland.
+## 152                                                                                 Archipelago of the Bahamas.
+## 153                                                                                       Department of France.
+## 154                                                                                        Province of Algeria.
+## 155                                                                                       Department of France.
+## 156                                                                                          County of Hungary.
+## 157                                                                           Administrative county of England.
+## 158                                                                                       Department of France.
+## 159                                    Province of the Philippines; includes the independent city of Zamboanga.
+## 160                                                                                        Province of Vietnam.
+## 161                                                                                          County of Romania.
+## 162                                                                                       Department of France.
+## 163                                                                                       Department of France.
+## 164                                                                                        Province of Vietnam.
+## 165                                                                                Province of the Philippines.
+## 166                                                                                         Province of Turkey.
+## 167                                                                                       Department of France.
+## 168                                                                                       Department of France.
+## 169                                                                                       Department of France.
+## 170                                                                                            State of Brazil.
+## 171                                                                                           State of Nigeria.
+## 172                                                                                          County of Romania.
+## 173                                                                                        Prefecture of Japan.
+## 174                                                                       Country in Country in Southeast Asia.
+## 175                                                                                   Island part of Australia.
+## 176                                                                                          County of Romania.
+## 177                                                                                       Department of France.
+## 178                                                                                       Department of France.
+## 179                                                                                Province of the Philippines.
+## 180                                                                                       Department of France.
+## 181                                                                                       Department of France.
+## 182                                                                                    Lake in South Australia.
+## 183                                                                                        Prefecture of Japan.
+## 184                                                                                Province of the Philippines.
+## 185                                                                                           Province of Cuba.
+## 186                                                                                         Province of Canada.
+## 187                                                                                        Province of Ecuador.
+## 188                                                                                      Province of Indonesia.
+## 189                                                                                          County of Hungary.
+## 190                                                                                          County of Romania.
+## 191                                                                                          County of Liberia.
+## 192                                                                              Second-largest island of Fiji.
+## 193 The third largest county in the Republic of Ireland, the second largest county in the province of Connacht.
+## 194                                                                                          County of Hungary.
+## 195                                                                                         Province of Turkey.
+## 196                                                                                       Department of France.
+## 197                                                                                       Island part of Chile.
+## 198                                                                                       Governorate of Syria.
+## 199                                                                                       Department of France.
+## 200                                                                                       Department of France.
+## 201                                                                                             Lake in Sweden.
+## 202                                                                           Third smallest aimag of Mongolia.
+## 203                                                                                       Department of France.
+## 204                                                                                       Province of Cambodia.
+## 205                                                                                         Province of Turkey.
+## 206                                                                                       Department of France.
+## 207                                                                                       District of Portugal.
+## 208                                                                                       Province of Thailand.
+## 209                                                                      Island part of the Arctic Archipelago.
+## 210                                                                                          County of Romania.
+## 211                                                                                          County of Romania.
+## 212                                                                    Largest province of the Solomon Islands.
+## 213                                                                                            State of Mexico.
+## 214                                                                                         Province of Turkey.
+## 215                                         Province of the Philippines; includes the independent city of Naga.
+## 216                                                                            Third smallest county of Sweden.
+## 217                                      Province of the Philippines; includes the independent city of Dagupan.
+## 218                                                                                          County of Romania.
+## 219                                                                               Region of the Czech Republic.
+## 220                                                                                        County of Lithuania.
+## 221                                                                             Third smallest region of Italy.
+## 222                                                                                         Province of Turkey.
+## 223                                                                                         Province of Turkey.
+## 224                                                                                             Lake in Canada.
+## 225                                                                    Island part of the U.S. state of Alaska.
+## 226                                                                                Province of the Philippines.
+## 227                                                                           Administrative county of England.
+## 228                                                                                          County of Romania.
+## 229                                                                                       Department of France.
+## 230                                                                                       Department of France.
+## 231                                                                                       Province of Thailand.
+## 232                                                                                          County of Romania.
+## 233                                                                      Largest island of the Solomon Islands.
+## 234                                                                                  Largest county of Croatia.
+## 235                                                                                       Province of Thailand.
+## 236                                                                                       Governorate of Yemen.
+## 237                                                                                Largest province of Armenia.
+## 238                                                                                         Province of Turkey.
+## 239                                                             Second largest province of the Solomon Islands.
+## 240                                                                               Region of the Czech Republic.
+## 241                                                                                        Province of Vietnam.
+## 242                Province of the Philippines; includes the independent cities of Cebu, Lapu-Lapu and Mandaue.
+## 243                                                               Third smallest autonomous community of Spain.
+## 244                                                                                          County of Romania.
+## 245                                                                               Unitary district of Scotland.
+## 246                                                                    Lake in Africa between Uganda and Zaire.
+## 247                                                                                       Province of Thailand.
+## 248                                                                                        Province of Ecuador.
+## 249                                                                                        Periphery of Greece.
+## 250                                                                               Region of the Czech Republic.
+## 251                                                                      Island part of the Arctic Archipelago.
+## 252                                                                                Province of the Philippines.
+## 253                                                                                       Department of France.
+## 254                                                                                        Department of Benin.
+## 255                                                                                       Department of France.
+## 256                                                                                       Department of France.
+## 257                                                                        Third largest canton of Switzerland.
+## 258                                                                                         Province of Turkey.
+## 259                                                                                        Province of Vietnam.
+## 260                                                                                       Department of France.
+## 261                                                                                        County of Lithuania.
+## 262                                                                         Largest unitary authority of Wales.
+## 263                                                                                       Province of Thailand.
+## 264                                                                                     Department of Honduras.
+## 265                                                                                            State of Mexico.
+## 266                                                                                       Department of France.
+## 267                                                                                        Prefecture of Japan.
+## 268                                                                                       Department of France.
+## 269                                                                                          County of Liberia.
+## 270                                                                                        Prefecture of Japan.
+## 271                                             Island in the New Siberian Islands archipelago, part of Russia.
+## 272                                                                                        Province of Vietnam.
+## 273                                                                                      Department of Uruguay.
+## 274                                                                                        Region of Nicaragua.
+## 275                                                                                           State of Nigeria.
+## 276                                                                    Island part of the U.S. state of Alaska.
+## 277                                                                                   Country in the Caribbean.
+## 278                                                                                          Region of Georgia.
+## 279                                         Lake in Africa between Democratic Republic of the Congo and Zambia.
+## 280                                                                       Second smallest district of Botswana.
+## 281                                                                                     Department of Honduras.
+## 282                                                                                          County of Liberia.
+## 283                                                                                       Island part of Chile.
+## 284                                                                      Third smallest province of Uzbekistan.
+## 285                                                                                          County of Romania.
+## 286                                                                                       Department of France.
+## 287                                                                   Third-largest island of Svalbard, Norway.
+## 288                                                         Lake in Canada; largest lake entirely on an island.
+## 289                                                                                        Province of Vietnam.
+## 290                                                                                       District of Portugal.
+## 291                                                                                        Province of Vietnam.
+## 292                                                                      Island part of the Arctic Archipelago.
+## 293                                                              Second smallest autonomous community of Spain.
+## 294                                                                                  Largest county of Albania.
+## 295                                                                                          County of Jamaica.
+## 296                                                                           Administrative county of England.
+## 297                                                     Largest of the two main islands of Trinidad and Tobago.
+## 298                                                                                       District of Portugal.
+## 299                                                                                      Island part of Brazil.
+```
+
+
+---
+
+background-image: url("https://media.giphy.com/media/JUqTbMDv31Eim4WYXe/giphy.gif")
+class: center, top, inverse
+
+# 5. L'exercice de la semaine
+
+---
+
+### Transformez la page des ancien·nes de l'IPJ en data.frame
+
+.pull-left[Je vous demande avec `{rvest}`de récupérer toutes les informations possibles sur chacun des profils présentés [sur la page consacrée aux ancien·nes sur le site de l'IPJ](https://www.ipj.eu/parcours-des-anciens/) et de les compiler dans un dataframe.
+
+#### Rendu
+Votre travail est demandé en format .Rmd par mail (n'hésitez pas faire plusieurs bouts de code pour le rendre plus lisible).
+
+* le titre du fichier devra être : *"ipj_ddj_exo02_prenomnom.Rmd"* ;
+* le titre de votre mail devra être : *"IPJ - DDJ - rendu exo02"*]
+
+.pull-right[
+![](./img/anciennes_ipj.png)
+]
+
+
+---
+class: inverse, center, middle
+
+# Merci !
+
+
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
