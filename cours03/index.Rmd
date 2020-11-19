@@ -1,0 +1,79 @@
+---
+title: "IPJ - Datajournalisme"
+subtitle: "Cours 3 : Nettoyer et manipuler des données en R"
+author: "Sylvain Lapoix"
+date: "23/11/2020"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+
+---
+
+background-image: url("https://media.giphy.com/media/5s9s1ePdKBV9m/giphy.gif")
+class: center, top, inverse
+
+# 1. Correction de l'exercice
+
+---
+
+### Correction
+
+
+
+---
+
+### Aparté : le Rmd
+
+
+---
+
+background-image: url("https://media.giphy.com/media/sR74mVSQe1ems/giphy.gif")
+class: center, top, inverse
+
+# 2. Manipuler les données
+
+
+---
+
+background-image: url("https://media.giphy.com/media/836gLmVVZgJEI/giphy.gif")
+class: center, top, inverse
+
+# 3. Des données "propres"
+
+
+---
+
+background-image: url("https://media.giphy.com/media/6229k5h1JkuvS/giphy.gif")
+class: center, top, inverse
+
+# 4. Tidy data : des données "bien rangées"
+
+---
+
+background-image: url("https://media.giphy.com/media/LtyywqYw5NgNq/giphy.gif")
+class: center, top, inverse
+
+# 5. L'exercice de la semaine
+
+
+---
+
+background-image: url("https://media.giphy.com/media/9p3JwPF6SPQXu/giphy.gif")
+class: center, top, inverse
+
+## La prochaine fois, nous passons à l'analyse
+
+
+---
+class: inverse, center, middle
+
+# Merci !
+
+
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+
+
