@@ -13,10 +13,14 @@ output:
 
 ---
 
-background-image: url("https://media.giphy.com/media/5s9s1ePdKBV9m/giphy.gif")
+background-image: url("https://media.giphy.com/media/fCUCbWXe9JONVsJSUd/giphy.gif")
 class: center, top, inverse
 
 # 1. Correction de l'exercice
+
+---
+
+### Méthodologie
 
 ---
 
@@ -31,15 +35,15 @@ class: center, top, inverse
 
 ---
 
-background-image: url("https://media.giphy.com/media/sR74mVSQe1ems/giphy.gif")
+background-image: url("https://media.giphy.com/media/PmABbbUe3IqUKSOIBV/giphy.gif")
 class: center, top, inverse
 
-# 2. Manipuler les données
+# 2. Trier et organiser ses données
 
 
 ---
 
-background-image: url("https://media.giphy.com/media/836gLmVVZgJEI/giphy.gif")
+background-image: url("https://media.giphy.com/media/uWzDsAsRm2X9qULHLs/giphy.gif")
 class: center, top, inverse
 
 # 3. Des données "propres"
@@ -47,14 +51,15 @@ class: center, top, inverse
 
 ---
 
-background-image: url("https://media.giphy.com/media/6229k5h1JkuvS/giphy.gif")
+background-image: url("https://media.giphy.com/media/xB2DKVtgNiJzZtAYht/giphy.gif")
 class: center, top, inverse
 
 # 4. Tidy data : des données "bien rangées"
 
+
 ---
 
-background-image: url("https://media.giphy.com/media/LtyywqYw5NgNq/giphy.gif")
+background-image: url("https://media.giphy.com/media/4N5wG6y1RW4ee0pAPY/giphy.gif")
 class: center, top, inverse
 
 # 5. L'exercice de la semaine
@@ -62,7 +67,7 @@ class: center, top, inverse
 
 ---
 
-background-image: url("https://media.giphy.com/media/9p3JwPF6SPQXu/giphy.gif")
+background-image: url("https://media.giphy.com/media/3s6GaByTfXDk8RXKDh/giphy.gif")
 class: center, top, inverse
 
 ## La prochaine fois, nous passons à l'analyse
