@@ -18,9 +18,9 @@ Ce cours se déroule dans le cadre du master journalisme de l'[Institut Pratique
 | :-----: | :-----: |  -----: | 
 | 19/10/2020 | Cours01 | Introduction à R et à la programmation | 
 | 10/11/2020 | Cours02 | Récupérer et charger des données | 
-| 16/11/2020 | Cours03 | Nettoyer et manipuler des données | 
-| 23/11/2020 | Cours04 | Analyser des données | 
-| 01/12/2020 | Cours05 | Visualisation | 
+| 23/11/2020 | Cours03 | Nettoyer et manipuler des données | 
+| 01/12/2020 | Cours04 | Analyser des données | 
+| 04/12/2020 | Cours05 | Visualisation | 
 |  | Cours06 | Introduction à l'analyse exploratoire de données | 
 
 ------
@@ -39,6 +39,9 @@ Ce cours se déroule dans le cadre du master journalisme de l'[Institut Pratique
 2. [dernière version disponible de Rstudio](https://rstudio.com/products/rstudio/download/#download)
 3. [Sublime Text 3](https://www.sublimetext.com/3)
 
+Veillez à installer également XCode et `{fansi}` comme expliqué  [ici](https://community.rstudio.com/t/problems-installing-packages-error-non-zero-exit-status-and-unknown-time-zone/73237/2) pour éviter les problème de timezone avec `{lubridate}` et les fonctions `date` en général.
+
+
 ### Linux
 
 Pré-requis :
@@ -49,16 +52,17 @@ sudo apt install libxml2-dev
 
 
 ### Packages R
-1. tidyverse ;
-2. data.table ;
-3. devtools ;
-4. rvest.
+1. {tidyverse} ;
+2. {data.table} ;
+3. {devtools} ;
+4. {rvest}.
 
 ## Support
 
 * Cours01 : [R, votre nouvel outil](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours01/#1)
 * Cours02 : [Sourcer et lire les données en R](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours02/#1)
-* Cours03 : à venir.
+* Cours03 : [Nettoyer et manipuler des données en R](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours03/#1)
+* Cours04 : à venir
 
 ## Bases de données utilisées
 
@@ -67,7 +71,8 @@ sudo apt install libxml2-dev
 * [Projet de loi de finances pour 2021 (PLF 2021), données du PLF et des annexes projet annuel de performance (PAP)](https://www.data.gouv.fr/fr/datasets/projet-de-loi-de-finances-pour-2021-plf-2021-donnees-du-plf-et-des-annexes-projet-annuel-de-performance-pap/#_), 2020, Ministère de l'économie, des finances et de la relance ;
 * [Clubs sportifs : coût d'une cotisation adulte à Issy-les-Moulineaux](https://www.data.gouv.fr/fr/datasets/clubs-sportifs-cout-dune-cotisation-adulte-a-issy-les-moulineaux/), 2020, Ville d'Issy-les-Moulineaux ;
 
-
+### cours03
+* [Répertoire national des élus (RNE)](https://www.data.gouv.fr/en/datasets/repertoire-national-des-elus-1/), 2020, Ministère de l'Intérieur.
 
 ## Références
 
@@ -84,3 +89,7 @@ sudo apt install libxml2-dev
 
 ### Sur le scraping
 * [la cheatsheet xPath de Devhints](https://devhints.io/xpath), très complète et didactique.
+
+### Sur les regex
+* [Strings - Maching patterns with regular expressions in R for data science](https://r4ds.had.co.nz/strings.html), Hadley Wickham ;
+* [les regex avec StringR](https://stringr.tidyverse.org/articles/regular-expressions.html), documentation {tidyverse}.

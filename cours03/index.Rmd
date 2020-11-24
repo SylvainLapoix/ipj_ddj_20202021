@@ -41,7 +41,7 @@ Je vous avais demandé avec de récupérer `{rvest}`toutes les informations poss
 
 1. identifier les données disponibles ;
 2. tester les xPath ;
-3. assembler dans une dataframe.
+3. assembler dans un dataframe.
 
 ]
 
@@ -69,7 +69,8 @@ Plusieurs d'entre vous ont proposé ce xPath tout à fait valide :
 ```{r correc_2}
 
 read_html("https://www.ipj.eu/parcours-des-anciens/") %>%
-  html_nodes(xpath = "//div[@class='team-thumbnail a_position-relative a_width-100-per a_height-100-per a_overflow-hidden rounded-false']/a/img") %>% html_attr(name = "src") %>% head()
+  html_nodes(xpath = "//div[@class='team-thumbnail a_position-relative a_width-100-per a_height-100-per a_overflow-hidden rounded-false']/a/img") %>%
+  html_attr(name = "src")
 ```
 
 --
@@ -158,7 +159,7 @@ Nous pouvons néanmoins énoncer quelques généralités :
 * est propre un jeu de données dont **les variables sont renseignées de manière claire et cohérente** par rapport au schéma général ;
 * est propre un jeu de données où **les données utiles sont formattées de manière à pouvoir être manipulées facilement**
 
-Trois notions clefs vont donc nous servir de guide pour nettoyer nos données : le typage, le nommage, la complétude et le formattage.
+Quatre notions clefs vont donc nous servir de guide pour nettoyer nos données : le typage, le nommage, la complétude et le formattage.
 
 ---
 
@@ -267,6 +268,8 @@ table(is.na(rne4$fonction))
 ```
 
 Nous avons donc bien un problème sur cette variable, qu'on dira *"mal renseignée"*.
+
+**Tester une variable avec `is.na()` est une vérification de complétude souvent utile avant d'utiliser une variable.**
 
 ---
 
@@ -436,7 +439,7 @@ rne4 %>% select(c("elu_nom","elu_prenom","region_nom")) %>% head()
 
 ### Les helpers
 
-Le "verbe" `select()` (suivant la nomenclature du `{tidyverse}`) propose également des **helpers functions** (abrégées *helpers*) qui permettent de réaliser des sélections plus fines, notamment en utilisant des expressions régulières.
+Le "verbe" `select()` (suivant la nomenclature du `{tidyverse}`) propose également des **[helpers functions](https://www.rdocumentation.org/packages/dplyr/versions/0.7.2/topics/select_helpers)** (abrégées *helpers*) qui permettent de réaliser des sélections plus fines, notamment en utilisant des expressions régulières.
 
 Par exemple, le helper `starts_with()` permet de soumettre une chaîne de caractères qui doit figurer au début du nom de la variable pour qu'elle soit retenue :
 
@@ -480,7 +483,7 @@ library(lubridate)
 rne4 %>% mutate(date_naissance = as.Date(date_naissance,
                                          format = "%d/%m/%Y"),
                 annee_naissance = year(date_naissance)) %>%
-  dplyr::select(date_naissance, annee_naissance) %>% 
+  select(date_naissance, annee_naissance) %>% 
   head()
 ```
 
@@ -505,7 +508,7 @@ En pratique, voilà ce que ça donne :
 ```{r calcul_age}
 rne4 %>% mutate(date_naissance = as.Date(date_naissance, format = "%d/%m/%Y"),
                 age = as.numeric(difftime(today(), date_naissance, units = "weeks"))/52.25) %>% 
-  dplyr::select(date_naissance, age)
+  select(date_naissance, age)
 ```
 
 --
@@ -551,7 +554,7 @@ Les jeux de données s'avèrent généralement trop vastes pour pouvoir être an
 
 Pour cela, la librairie `{dplyr}` propose deux fonctions complémentaires permettant de réaliser des *"synthèses groupées"* :
 * `group_by()` qui permet de grouper les observations par les différentes valeurs d'une ou plusieurs variables ;
-* `summarise()` qui permet de générer une variable calculer sur la base des groupes ainsi constitués.
+* `summarise()` qui permet de générer une variable calculée sur la base des groupes ainsi constitués.
 
 ---
 
@@ -568,7 +571,10 @@ rne4_c %>% group_by(sexe)
 
 ### summarise()
 
-La fonction `summarise()` permet de générer de nouvelles variables, à la manière de `mutate()`, avec une différence notable : elle le fait sur la base des groupes constitués avec `group_by()` et en supprimant toutes les autres variables.
+La fonction `summarise()` permet de générer de nouvelles variables, à la manière de `mutate()`, avec deux différences notables :
+
+1. elle le fait sur la base des groupes constitués avec `group_by()`
+2. elle écarte toutes les autres variables.
 
 Si nous groupons comme à la slide précédente le jeu de données par sexe, il nous est possible de calculer l'âge moyen *"par sexe"* en utilisant la fonction `summarise()` en aval de `group_by(sexe)` :
 
@@ -590,7 +596,7 @@ Nous pouvons ainsi complexifier notre synthèse sur les âges moyens par sexe en
 
 ```{r multigrouping}
 rne4_c %>% group_by(region_nom, sexe) %>%
-  summarise(age_moyen = mean(age)) %>% head()
+  summarise(age_moyen = mean(age))
 ```
 
 
@@ -621,7 +627,8 @@ Une fois certains calculs réalisés, il peut être intéressant d'ordonner les 
 
 La fonction `arrange()` permet de réaliser cette opération suivant deux modalités :
 * `arrange(variable)` : triera par ordre croissant les valeurs de la variable passée en argument ;
-* `arrange(desc(variable))` : triera par ordre décroissant les valeurs de la variable passée en argument.
+* `arrange(desc(variable))` : triera par ordre décroissant les valeurs de la variable passée en argument ;
+* `arrange(variable1, variable2)` : triera d'abord par la variable1 puis par la variable2 (en cas de valeurs égales dans variables1).
 
 ---
 
@@ -683,12 +690,12 @@ class: center, top, inverse
 
 Je vous demande de réaliser une exploration du jeu de données des conseillers départementaux [de la base de données RNE](https://www.data.gouv.fr/en/datasets/repertoire-national-des-elus-1/).
 
-Vous utiliserez les techniques présentées ici (et toutes celles qui vous paraîtrons pertinentes) pour explorer trois thématiques :
+Vous utiliserez les techniques présentées ici (et toutes celles qui vous paraîtront pertinentes) pour explorer trois thématiques :
 * le genre ;
 * l'âge ;
 * la profession.
 
-Pour chaque thématique, vous présenterez une synthèse qui souligne un fait saillant dans la base.
+Pour chaque thématique, vous présenterez une synthèse (dans un chunk de code = un pipeline) qui souligne un fait saillant dans la base.
 
 #### Rendu
 Votre travail est demandé en format .Rmd par mail (n'hésitez pas faire plusieurs bouts de code pour le rendre plus lisible).
@@ -710,6 +717,6 @@ class: inverse, center, middle
 # Merci !
 
 
-Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com)
 
 

@@ -39,7 +39,7 @@ Je vous avais demandé avec de récupérer `{rvest}`toutes les informations poss
 
 1. identifier les données disponibles ;
 2. tester les xPath ;
-3. assembler dans une dataframe.
+3. assembler dans un dataframe.
 
 ]
 
@@ -68,16 +68,34 @@ Plusieurs d'entre vous ont proposé ce xPath tout à fait valide :
 
 ```r
 read_html("https://www.ipj.eu/parcours-des-anciens/") %&gt;%
-  html_nodes(xpath = "//div[@class='team-thumbnail a_position-relative a_width-100-per a_height-100-per a_overflow-hidden rounded-false']/a/img") %&gt;% html_attr(name = "src") %&gt;% head()
+  html_nodes(xpath = "//div[@class='team-thumbnail a_position-relative a_width-100-per a_height-100-per a_overflow-hidden rounded-false']/a/img") %&gt;%
+  html_attr(name = "src")
 ```
 
 ```
-## [1] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Bertrand-HOCHET-2-500x500-n8khmr1o2yg5xslp0hdbts8xcg1ozwrrjou5ugzn9k.jpg"                      
-## [2] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/38-500x500-n5m3ow6dlq215jvsv0pzrs54v6gg218frnmlh1v3ig.jpg"                                     
-## [3] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Caroline-Laurent-Simon_visuel_article3-500x500-n5m3nk8lx68epftfmy00qm8mkj0q5gy4l2ctzxu6bs.jpeg"
-## [4] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/chabaudcatherine-500x500-n5m3bqfpx81im2zxpby0v3otgzbgakzpyitvlldimg.jpeg"                      
-## [5] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/dummy-7-n5a1yevqwz0ct8scgkp6n1hrlc8reatuz5j9rtly14.png"                                        
-## [6] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/7-500x500-n5m40pz9lo8x8wpasmrznaoxyq5pwx6ue75jvebr7s.jpg"
+##  [1] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Bertrand-HOCHET-2-500x500-n8khmr1o2yg5xslp0hdbts8xcg1ozwrrjou5ugzn9k.jpg"                                                       
+##  [2] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/38-500x500-n5m3ow6dlq215jvsv0pzrs54v6gg218frnmlh1v3ig.jpg"                                                                      
+##  [3] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Caroline-Laurent-Simon_visuel_article3-500x500-n5m3nk8lx68epftfmy00qm8mkj0q5gy4l2ctzxu6bs.jpeg"                                 
+##  [4] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/chabaudcatherine-500x500-n5m3bqfpx81im2zxpby0v3otgzbgakzpyitvlldimg.jpeg"                                                       
+##  [5] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/dummy-4-n5a1yevqwz0ct8scgkp6n1hrlc8reatuz5j9rtly14.png"                                                                         
+##  [6] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/7-500x500-n5m40pz9lo8x8wpasmrznaoxyq5pwx6ue75jvebr7s.jpg"                                                                       
+##  [7] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Dorothee_Ollieric-500x500-n5m43n96v491d8gdpwa7ek4khvqtv0ss4o7xmdznuw.jpg"                                                       
+##  [8] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/eric-nahon-500x500-n8eoq7697hdou2mgr6kjr2if89w2cnp8kevve1scqw.png"                                                              
+##  [9] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/FaizaZeroualaPhoto-500x500-n5m3c8anj2pyqo9zt1nxoh6kravfctymcz83pun1c8.jpg"                                                      
+## [10] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/francois-xavier-pietri-500x500-n5m3b5r9qv97intz2308c8woei5dl8pmjoh71i86fc.jpeg"                                                 
+## [11] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/dummy-7-n5a1yevqwz0ct8scgkp6n1hrlc8reatuz5j9rtly14.png"                                                                         
+## [12] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Hakim-Kasmi-500x500-ondag37dj3cvtnb6pp6c0et4unxro92kixoji2iydk.jpg"                                                             
+## [13] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Mostafavi-500x500-ol5rjbew3bgdimn4ldugqg42b52wdh2jrodhk1ovwo.jpeg"                                                              
+## [14] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/5-500x500-n5m41j49hjct8tiz2hdfalc8do63jjeiu7dlqz4juw.jpg"                                                                       
+## [15] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Laurence_Vignon-500x500-n5m43b1ae9sb6ay4p902057krvf22yg9qzqmdshs3s.jpg"                                                         
+## [16] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/barbarin-500x500-ok1chmgg6gv615z2w3xy5s9w7vs1rjdnyd7w4gjsso.jpg"                                                                
+## [17] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/HERBEAUX-500x500-n5m38jrerfoj9nmiaydjewmkzz0o7icgur8n1u3jpk.jpg"                                                                
+## [18] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/olivier-delacroix-journaliste-realisateur-magazine-yeux-olivier-france-2-500x500-n5m3al2tkigwf8o0eu2fte4jc0zavwfj4u4ihf2u88.jpg"
+## [19] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/15-500x500-n5m3y3zem8o8zwhu1i5apyeuk710j6top9wzvq74i0.jpg"                                                                      
+## [20] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/21-500x500-n5m3vnmkrtbaok26dfyd7kpipz4ifn2x14lcrpu4qw.jpg"                                                                      
+## [21] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/steven-bellery-500x500-n5m3a2a1rtr5z1fbglxwfivbgbjylycwe92svvupoo.jpg"                                                          
+## [22] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Lapoix-500x500-n5m385ntwx58fi6zlaa4vi6o36y601shstgcuoogaw.jpg"                                                                  
+## [23] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/18-500x500-n5m3wwqtvv125u8n1zggj9bn8gy4p4217bwnszz8g8.jpg"
 ```
 
 --
@@ -95,7 +113,7 @@ read_html("https://www.ipj.eu/parcours-des-anciens/") %&gt;%
 ## [2] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/38-500x500-n5m3ow6dlq215jvsv0pzrs54v6gg218frnmlh1v3ig.jpg"                                     
 ## [3] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/Caroline-Laurent-Simon_visuel_article3-500x500-n5m3nk8lx68epftfmy00qm8mkj0q5gy4l2ctzxu6bs.jpeg"
 ## [4] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/chabaudcatherine-500x500-n5m3bqfpx81im2zxpby0v3otgzbgakzpyitvlldimg.jpeg"                      
-## [5] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/dummy-4-n5a1yevqwz0ct8scgkp6n1hrlc8reatuz5j9rtly14.png"                                        
+## [5] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/dummy-3-n5a1yevqwz0ct8scgkp6n1hrlc8reatuz5j9rtly14.png"                                        
 ## [6] "https://www.ipj.eu/wp-content/uploads/bfi_thumb/7-500x500-n5m40pz9lo8x8wpasmrznaoxyq5pwx6ue75jvebr7s.jpg"
 ```
 
@@ -184,7 +202,7 @@ Nous pouvons néanmoins énoncer quelques généralités :
 * est propre un jeu de données dont **les variables sont renseignées de manière claire et cohérente** par rapport au schéma général ;
 * est propre un jeu de données où **les données utiles sont formattées de manière à pouvoir être manipulées facilement**
 
-Trois notions clefs vont donc nous servir de guide pour nettoyer nos données : le typage, le nommage, la complétude et le formattage.
+Quatre notions clefs vont donc nous servir de guide pour nettoyer nos données : le typage, le nommage, la complétude et le formattage.
 
 ---
 
@@ -418,6 +436,8 @@ table(is.na(rne4$fonction))
 ```
 
 Nous avons donc bien un problème sur cette variable, qu'on dira *"mal renseignée"*.
+
+**Tester une variable avec `is.na()` est une vérification de complétude souvent utile avant d'utiliser une variable.**
 
 ---
 
@@ -823,7 +843,7 @@ rne4 %&gt;% select(c("elu_nom","elu_prenom","region_nom")) %&gt;% head()
 
 ### Les helpers
 
-Le "verbe" `select()` (suivant la nomenclature du `{tidyverse}`) propose également des **helpers functions** (abrégées *helpers*) qui permettent de réaliser des sélections plus fines, notamment en utilisant des expressions régulières.
+Le "verbe" `select()` (suivant la nomenclature du `{tidyverse}`) propose également des **[helpers functions](https://www.rdocumentation.org/packages/dplyr/versions/0.7.2/topics/select_helpers)** (abrégées *helpers*) qui permettent de réaliser des sélections plus fines, notamment en utilisant des expressions régulières.
 
 Par exemple, le helper `starts_with()` permet de soumettre une chaîne de caractères qui doit figurer au début du nom de la variable pour qu'elle soit retenue :
 
@@ -896,7 +916,7 @@ library(lubridate)
 rne4 %&gt;% mutate(date_naissance = as.Date(date_naissance,
                                          format = "%d/%m/%Y"),
                 annee_naissance = year(date_naissance)) %&gt;%
-  dplyr::select(date_naissance, annee_naissance) %&gt;% 
+  select(date_naissance, annee_naissance) %&gt;% 
   head()
 ```
 
@@ -934,7 +954,7 @@ En pratique, voilà ce que ça donne :
 ```r
 rne4 %&gt;% mutate(date_naissance = as.Date(date_naissance, format = "%d/%m/%Y"),
                 age = as.numeric(difftime(today(), date_naissance, units = "weeks"))/52.25) %&gt;% 
-  dplyr::select(date_naissance, age)
+  select(date_naissance, age)
 ```
 
 ```
@@ -997,7 +1017,7 @@ Les jeux de données s'avèrent généralement trop vastes pour pouvoir être an
 
 Pour cela, la librairie `{dplyr}` propose deux fonctions complémentaires permettant de réaliser des *"synthèses groupées"* :
 * `group_by()` qui permet de grouper les observations par les différentes valeurs d'une ou plusieurs variables ;
-* `summarise()` qui permet de générer une variable calculer sur la base des groupes ainsi constitués.
+* `summarise()` qui permet de générer une variable calculée sur la base des groupes ainsi constitués.
 
 ---
 
@@ -1033,7 +1053,10 @@ rne4_c %&gt;% group_by(sexe)
 
 ### summarise()
 
-La fonction `summarise()` permet de générer de nouvelles variables, à la manière de `mutate()`, avec une différence notable : elle le fait sur la base des groupes constitués avec `group_by()` et en supprimant toutes les autres variables.
+La fonction `summarise()` permet de générer de nouvelles variables, à la manière de `mutate()`, avec deux différences notables :
+
+1. elle le fait sur la base des groupes constitués avec `group_by()`
+2. elle écarte toutes les autres variables.
 
 Si nous groupons comme à la slide précédente le jeu de données par sexe, il nous est possible de calculer l'âge moyen *"par sexe"* en utilisant la fonction `summarise()` en aval de `group_by(sexe)` :
 
@@ -1065,20 +1088,25 @@ Nous pouvons ainsi complexifier notre synthèse sur les âges moyens par sexe en
 
 ```r
 rne4_c %&gt;% group_by(region_nom, sexe) %&gt;%
-  summarise(age_moyen = mean(age)) %&gt;% head()
+  summarise(age_moyen = mean(age))
 ```
 
 ```
-## # A tibble: 6 x 3
-## # Groups:   region_nom [3]
-##   region_nom              sexe  age_moyen
-##   &lt;chr&gt;                   &lt;chr&gt;     &lt;dbl&gt;
-## 1 Auvergne-Rhône-Alpes    F          52.9
-## 2 Auvergne-Rhône-Alpes    M          54.9
-## 3 Bourgogne-Franche-Comté F          54.5
-## 4 Bourgogne-Franche-Comté M          52.7
-## 5 Bretagne                F          55  
-## 6 Bretagne                M          53.8
+## # A tibble: 28 x 3
+## # Groups:   region_nom [14]
+##    region_nom              sexe  age_moyen
+##    &lt;chr&gt;                   &lt;chr&gt;     &lt;dbl&gt;
+##  1 Auvergne-Rhône-Alpes    F          52.9
+##  2 Auvergne-Rhône-Alpes    M          54.9
+##  3 Bourgogne-Franche-Comté F          54.5
+##  4 Bourgogne-Franche-Comté M          52.7
+##  5 Bretagne                F          55  
+##  6 Bretagne                M          53.8
+##  7 Centre-Val de Loire     F          54.5
+##  8 Centre-Val de Loire     M          56.8
+##  9 Grand Est               F          54.8
+## 10 Grand Est               M          55.0
+## # … with 18 more rows
 ```
 
 
@@ -1146,7 +1174,8 @@ Une fois certains calculs réalisés, il peut être intéressant d'ordonner les 
 
 La fonction `arrange()` permet de réaliser cette opération suivant deux modalités :
 * `arrange(variable)` : triera par ordre croissant les valeurs de la variable passée en argument ;
-* `arrange(desc(variable))` : triera par ordre décroissant les valeurs de la variable passée en argument.
+* `arrange(desc(variable))` : triera par ordre décroissant les valeurs de la variable passée en argument ;
+* `arrange(variable1, variable2)` : triera d'abord par la variable1 puis par la variable2 (en cas de valeurs égales dans variables1).
 
 ---
 
@@ -1251,12 +1280,12 @@ class: center, top, inverse
 
 Je vous demande de réaliser une exploration du jeu de données des conseillers départementaux [de la base de données RNE](https://www.data.gouv.fr/en/datasets/repertoire-national-des-elus-1/).
 
-Vous utiliserez les techniques présentées ici (et toutes celles qui vous paraîtrons pertinentes) pour explorer trois thématiques :
+Vous utiliserez les techniques présentées ici (et toutes celles qui vous paraîtront pertinentes) pour explorer trois thématiques :
 * le genre ;
 * l'âge ;
 * la profession.
 
-Pour chaque thématique, vous présenterez une synthèse qui souligne un fait saillant dans la base.
+Pour chaque thématique, vous présenterez une synthèse (dans un chunk de code = un pipeline) qui souligne un fait saillant dans la base.
 
 #### Rendu
 Votre travail est demandé en format .Rmd par mail (n'hésitez pas faire plusieurs bouts de code pour le rendre plus lisible).
@@ -1278,7 +1307,7 @@ class: inverse, center, middle
 # Merci !
 
 
-Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com)
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
