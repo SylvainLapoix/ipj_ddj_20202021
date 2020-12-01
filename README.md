@@ -62,7 +62,9 @@ sudo apt install libxml2-dev
 * Cours01 : [R, votre nouvel outil](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours01/#1)
 * Cours02 : [Sourcer et lire les données en R](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours02/#1)
 * Cours03 : [Nettoyer et manipuler des données en R](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours03/#1)
-* Cours04 : à venir
+* Cours04 : [Analyse de données en R](https://sylvainlapoix.github.io/ipj_ddj_20202021/cours04/#1)
+* Cours05 : à venir
+* Cours06 : à venir
 
 ## Bases de données utilisées
 
@@ -73,6 +75,17 @@ sudo apt install libxml2-dev
 
 ### cours03
 * [Répertoire national des élus (RNE)](https://www.data.gouv.fr/en/datasets/repertoire-national-des-elus-1/), 2020, Ministère de l'Intérieur.
+
+### cours04
+* [Registre de Preuve de Covoiturage](https://www.data.gouv.fr/en/datasets/trajets-realises-en-covoiturage-registre-de-preuve-de-covoiturage/), 2020 ;
+* [Base Nationale des Lieux de Covoiturage](https://www.data.gouv.fr/en/datasets/base-nationale-des-lieux-de-covoiturage/), Point d'Accès National transport.data.gouv.fr, 2020.
+
+### cours05
+* à venir
+
+### cours06
+* à venir
+
 
 ## Références
 
