@@ -2,7 +2,7 @@
 title: "IPJ - Datajournalisme"
 subtitle: "Cours 4 : Analyse de données en R"
 author: "Sylvain Lapoix"
-date: "23/11/2020"
+date: "01/12/2020"
 output:
   xaringan::moon_reader:
     lib_dir: libs
@@ -47,7 +47,7 @@ class: center, top, inverse
 
 ## Mettre son jeu de données en ordre
 
-Avant toute **analyse**, faîtes-vou sun bloc de code où :
+Avant toute **analyse**, faîtes-vous un bloc de code où :
 1. **charger vos données** ;
 2. **identifier ses dimensions** ;
 3. **renommer les variables**.
@@ -57,7 +57,6 @@ Nous travaillerons aujourd'hui sur le jeu de données preuves de covoiturage (é
 ```{r load_covoit}
 covoit <- read_csv2("https://www.data.gouv.fr/en/datasets/r/729ce224-33a4-41b1-9422-2586af67de6e")
 
-names(covoit)
 ```
 
 ---
@@ -72,7 +71,7 @@ names(covoit)
 ```{r explo_covoit}
 table(is.na(covoit$journey_id))
 
-unique(covoit$journey_start_insee)
+unique(covoit$journey_start_postalcode)
 ```
 
 
@@ -102,11 +101,11 @@ class: bottom
 library(lubridate)
 
 # créons une nouvelle variable où stocker notre jeu de données étendu
-covoit_2 <- covoit %>%  mutate(jour_semaine_depart = wday(journey_start_datetime, label = TRUE,
-                                                          abbr= FALSE,
-                                                          week_start = getOption("lubridate.week.start", 1)))
-?wday
-table(covoit_2$jour_semaine_depart)
+covoit_2 <- covoit %>%  mutate(journey_start_wday = wday(journey_start_datetime, label = TRUE,
+                                                         abbr= FALSE,
+                                                         week_start = getOption("lubridate.week.start", 1)))
+
+table(covoit_2$journey_start_wday)
 ```
 
 
@@ -119,7 +118,7 @@ Vous pouvez utiliser `table()` mais vous pouvez aussi tenter une visualisation r
 La fonction `qplot()` de `{base}` permet de générer rapidement un graph quand une variable lui est passé en argument :
 
 ```{r qplot_covoit_jour, fig.height = 5}
-qplot(covoit_2$jour_semaine_depart)
+qplot(covoit_2$journey_start_date)
 ```
 
 
@@ -129,14 +128,14 @@ qplot(covoit_2$jour_semaine_depart)
 background-image: url("https://media.giphy.com/media/o1I8DMW1hVtAI/giphy.gif")
 class: center, top, inverse
 
-# 3. De la question journalistique à la fonction informatique
+# 3. De la question journalistique<br>à la fonction informatique
 
 ---
 
 background-image: url("https://media.giphy.com/media/n8SkNR77udWlG/giphy.gif")
 class: center, top
 
-## Quelles questions vous viennent spontanément face à ce jeu de données ?
+## Quelles questions vous viennent spontanément<br>face à ce jeu de données ?
 
 ---
 
@@ -148,7 +147,7 @@ Dès lors, approcher journalistiquement un jeu de données va consister à raiso
 
 Ici :
 * chaque observation est un **trajet** : nous devrons donc raisonner à cette échelle ;
-* chaque variable décrit les caractéristiques de ce trajet en terme de temps, espace ou voyageur·es ;
+* chaque variable décrit les caractéristiques de ce trajet en terme de temps, espace ou voyageur·ses ;
 * les valeurs se réfèrent à différentes échelles du trajet : échelles de temps (jour, mois, heure, semaine), d'espace (point, ville, département, pays) et de déplacement (départ / arrivée).
 
 ---
@@ -175,7 +174,12 @@ Une fois votre question formulée, il s'agit de lister les préalables nécessai
 
 --
 
-### Allez hop, on traduit !
+### Exercice
+
+Maintenant, à vous de répondre aux questions suivantes :
+1. où vont les gens qui prennent des covoits ?
+2. à quel moment de la journée y a-t-il le plus de covoits ?
+3. est-ce la destination change en fonction de l'heure de la journée ?
 
 ---
 
@@ -200,8 +204,7 @@ Heureusement, vous pouvez intégrer `rbind()` dans votre pipeline.
 
 ## Les jointures : principes généraux
 
-
-.pull-left[La jointure est l'opération consistant à rapprocher deux jeux de données sur la base d'une ou plusieurs variable(s) commune(s), appelée(s) **clef()s**.
+La jointure est l'opération consistant à rapprocher deux jeux de données sur la base d'une ou plusieurs variable(s) commune(s), appelée(s) **clef(s)**.
 
 Assurée par la fonction `merge()` dans `{base}`, elle trouve son équivalent dans le package `{dplyr}` avec les fonctions `*_join()`.
 
@@ -226,6 +229,16 @@ Source : [RStudio Cheatsheets](https://github.com/rstudio/cheatsheets).]
 
 ### Exemple avec `left_join()`
 
+Nous pouvons tenter d'étudier la relation entre le nombre de trajet en covoiturage et la présence d'une aire de covoiturage.
+
+Pour ce faire, chargeons la Base Nationale des Lieux de Covoiturage (BNLC, [dispo sur data.gouv.fr](https://www.data.gouv.fr/en/datasets/base-nationale-des-lieux-de-covoiturage/)) et voyons comment la joindre au jeu de données trajets :
+
+```{r left_join_aires}
+aires <- read_csv("https://www.data.gouv.fr/en/datasets/r/3c705389-0a9c-49e7-ae35-6c17dff20723")
+
+glimpse(aires)
+```
+
 
 ---
 
@@ -233,6 +246,15 @@ background-image: url("https://media.giphy.com/media/LtyywqYw5NgNq/giphy.gif")
 class: center, top, inverse
 
 # 5. C'est l'heure de l'exercice
+
+---
+
+background-image: url("https://media.giphy.com/media/PNbQVLoUAYUoHF46UP/giphy.gif")
+class: center, top
+
+## Trouvez-moi un sujet dans la base covoiturage
+
+.footnote[Cet exercice sera noté. Je vous demande une proposition d'un feuillet et les calculs qui vous y ont mené dans un .Rmd suivant la nomenclature habituelle.<br>**Vous avez jusqu'au 8/12/2020 à minuit (heure du mail)**.]
 
 ---
 
@@ -248,6 +270,6 @@ class: inverse, center, middle
 # Merci !
 
 
-Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com)
 
 
