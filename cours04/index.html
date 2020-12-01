@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>IPJ - Datajournalisme</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Sylvain Lapoix" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# IPJ - Datajournalisme
+## Cours 4 : Analyse de données en R
+### Sylvain Lapoix
+### 23/11/2020
+
+---
+
+
+background-image: url("https://media.giphy.com/media/5s9s1ePdKBV9m/giphy.gif")
+class: center, top, inverse
+
+# 1. Correction de l'exercice
+
+
+
+---
+
+background-image: url("https://media.giphy.com/media/6229k5h1JkuvS/giphy.gif")
+class: center, top, inverse
+
+
+## Ce cours vous donnera les clefs de la correction de cet exercice
+
+---
+
+background-image: url("https://media.giphy.com/media/YeTUpy1LtaBY4/giphy.gif")
+class: center, top, inverse
+
+# 2. L'analyse, par où commencer ?
+
+---
+
+## Mettre son jeu de données en ordre
+
+Avant toute **analyse**, faîtes-vou sun bloc de code où :
+1. **charger vos données** ;
+2. **identifier ses dimensions** ;
+3. **renommer les variables**.
+
+Nous travaillerons aujourd'hui sur le jeu de données preuves de covoiturage (édition octobre 2020), [disponible sur data.gouv.fr en scsv](https://www.data.gouv.fr/en/datasets/trajets-realises-en-covoiturage-registre-de-preuve-de-covoiturage/).
+
+
+```r
+covoit &lt;- read_csv2("https://www.data.gouv.fr/en/datasets/r/729ce224-33a4-41b1-9422-2586af67de6e")
+
+names(covoit)
+```
+
+```
+##  [1] "journey_id"               "trip_id"                 
+##  [3] "journey_start_datetime"   "journey_start_date"      
+##  [5] "journey_start_time"       "journey_start_lon"       
+##  [7] "journey_start_lat"        "journey_start_insee"     
+##  [9] "journey_start_postalcode" "journey_start_department"
+## [11] "journey_start_town"       "journey_start_country"   
+## [13] "journey_end_datetime"     "journey_end_date"        
+## [15] "journey_end_time"         "journey_end_lon"         
+## [17] "journey_end_lat"          "journey_end_insee"       
+## [19] "journey_end_postalcode"   "journey_end_department"  
+## [21] "journey_end_town"         "journey_end_country"     
+## [23] "passenger_seats"
+```
+
+---
+
+## Repérez ses forces et ses faiblesses
+
+* y a-t-il des variables mal renseignées ?
+* y a-t-il des variables particulièrement intéressantes ?
+* y a-t-il des variables redondantes ?
+
+
+
+```r
+table(is.na(covoit$journey_id))
+```
+
+```
+## 
+## FALSE 
+## 63000
+```
+
+```r
+unique(covoit$journey_start_insee)
+```
+
+```
+##    [1] 91201 45008 93031 95134 45252 83116  6088 95491 74010 95060 91228 74281
+##   [13] 31555 91657 49099 35238 74112 79079 44051  6083 74250 32160 77284 82121
+##   [25] 74131 74006 78517 77070 69264 81284 81004 78242 37261 91174 94002 44069
+##   [37] 91103 76540 94046 94074 17347 92012 85302 73065 74201 78440 28085 31324
+##   [49] 73011 34172 69019 42218 38053 13214 60335 95252 94004 31084 31553 83064
+##   [61] 13001 74224 59183 69149 30034 38509 59411 60103  4112 74264 27213 69266
+##   [73] 33297 13103 81171 38185 59350 32268 74282 38249 78502 34036 27681 59475
+##   [85] 74012 92050 92019 34032 45234 14118  1262 92062 81140 91223 91207 73213
+##   [97] 31574 33037 59459 44020 51562 69382 38105 49331 91347 74242 43162 86062
+##  [109] 13210 94022 85153 44109  6069 59328 51662 59009 17274 51108 22034 69286
+##  [121] 13005 60387 59447 59606 60041 78362 54150 64147 91345 34166 29232 89024
+##  [133] 83023 31588 74280 34114 38276 38397 53150 31106  8362 94028 33550 83126
+##  [145] 73039 40206 69271 51454 53062 75107 38064 33366 73067 69383 49007 50165
+##  [157] 31118 69387 21540  1290 85101 77285  8239 74197 17300  1143  1173 85051
+##  [169] 59526 14536 59431 33249 37122 59032 38027 21231 40261 38421 89387 19274
+##  [181] 93005 69116 31291 41206 65226 73128 29026 28404 94076 31395 78498 74213
+##  [193] 59383 73029 51649 85191 63178 44198 72181 13208 91692 91471 92060 92026
+##  [205] 95197 75114 73270 13201 76484 42187 35288 35047 91161  2810 59599 73008
+##  [217] 38544 17353 81220 92025 74263 31557 86194 14579 78490 33281 74225 40224
+##  [229] 35184 88011 47323 49218 56007 11359 91661 24237 32134 77468 34031 31044
+##  [241]  5061 94081 31187 18207 44162 40192 82075 33192 74105 59034 91377 91405
+##  [253] 80021 38140 13066 31351 31202 67482 33051 13205 60057 84089 31581 76116
+##  [265] 94001 91552 76498 57483 44045 41131 35337 69029 94017 45284 54395 24208
+##  [277] 13209 68297 27105  2239 27679 54528 86115 74243 95462 29233 73204 14738
+##  [289] 44005 83061 92073 95450 31356 49020 68056  8180 27375 81156 44184 73064
+##  [301] 74189 63285 74104 78423 38138 38563 38314 59487 28134 69389 35115 50025
+##  [313]  1004 78165 44073 42011 78321 60646 28292 31573  6123 87085 76429 93079
+##  [325] 38193 75119 78208 74002 33284 74288 59122 31429 79191 62276 83130 44149
+##  [337] 77083 22032 64260 89441 22070 33119 10268 56098 85109 64430 76322  2691
+##  [349] 44114 74081 42279 34239 51230 42186 13002 13063 29019 22113 79049 33214
+##  [361] 76319 44129 13071 60159 74256 64102 31091 14030 45069 50099 76212 83144
+##  [373] 13118 94041 35243 69385 14341 44067 13028 62041 90010 77243 17299 71105
+##  [385] 12120 19153 22050 59368 44212 83137 44180 69040 77058 44210 44215 95268
+##  [397] 40295 94078 31547 94044 75120 94043 54431 14566 13004 18279 50129 41269
+##  [409] 85110 64496 17094 59410 34123 60191 35278 33318 31396 13207 24322 74070
+##  [421] 33293 30189 14663 31467 27378 57631 73179 31526 35051 34270 93027  6155
+##  [433] 78621  2722 12237 83050 69386 13211 35179 69152 62160 59346 72299 74303
+##  [445] 92023 91027 92063 31161 95052 35210 95487 44035 38075 34139 34079 76575
+##  [457] 68224 44201 14627 69249  2168 85146 44026 64526 38149 31113 80131 61169
+##  [469] 76391 13032 31587 91477 74236 56260 78297 13059 35226 31032 17415 44009
+##  [481] 40088 14258  3185 44190 31149 60462  6095 95306 95018 92002 91549 78172
+##  [493] 78158 78372 78481 44143 76217 94068 56118 84031 73103 86256  1249  6027
+##  [505] 29061 35265 59484 49308 92040 12056  1345 42123 81271 72320 26362  3101
+##  [517] 85047 32210 33200 62498 38181 42103 63113 85288 83049 56083 74123 31003
+##  [529] 37050  6004 29254  8105 75115 94071 35012 59378 54526 38104 69034 44018
+##  [541] 94038 94047 78146 94016 17283 78383 78640 13041 93010 14304 78367 27229
+##  [553] 69256 31232 61001 62587 71310 76351 54215 93064 73124 13212 33527 91330
+##  [565] 31069 89152 31169 69124 31582 13053 57652 22343 13113 75117 34240 74208
+##  [577] 91105 33522 75116 95607 13056 78551 92049 81099 92020 31424 92044 93007
+##  [589] 31445 22278 56121 13007 29186 33063 22164 31366 78646 73330 91589 33529
+##  [601] 69259 94003 62744 33199 31277 92075 92064 33229 75113 94054 33075 35284
+##  [613] 92024 60403 93070  6079 43099 78455 49050 16028 22265 91521 75112 35177
+##  [625] 17472  6029 71153 78217 29055 77390 31184 91326 91272 94034 94065 31188
+##  [637] 73255 78466 92004 94011 67447 64129 92048 92046 95582 29160 85194 34134
+##  [649] 91645 92014 64131 54547 42095 57283 76451 59221 38553 25056 91687 91570
+##  [661] 75118 22093 64445 13117 49058 69279 69290 99138 73051 99140 33122 91534
+##  [673] 73268 78117 74133 73137 13213 74008 77146 38179 50484 88160 42305 25388
+##  [685] 59360 59324 92036 14137 57463 93066 68349 99352 69276  2085 13215 37083
+##  [697] 69027 95203  1283 86066 87154 35324 51043 14514  1031 38516 77288 69388
+##  [709] 13015 69275 13099 71270 44103 38229 44204 63004 44036 59646 76108 95127
+##  [721] 93051 75110 91340 21496  7349  8311 59585 67180 71076 51617 72244 47001
+##  [733]  6034 38449 59603 35137 29075 31254 31446 62239 59507 59527  1053 74016
+##  [745] 41047 59094  1390  6018 14762 83129  5097 78003 69277 29268 14752 34142
+##  [757] 69043 84007 69204 53147 23096 27701 44052 38485 83031 42189 83090 38155
+##  [769] 44047 71240 77215 94037  2361  4197 73054 62510 59512 56259  6152 65440
+##  [781] 59343 77018 92033 34126 29181 69081 49332 57540 18033 85003 53140 74056
+##  [793] 59153 22106 69282 91458 61070 91479 38466 74164 16015 39300 89206 62907
+##  [805] 41018 62193 63430 12033 64256 11206 76305 82025 69127 60395 93073 37104
+##  [817] 62765 12202 38039 49023 27306 73240  6085 38348 16230  2575 38423 34057
+##  [829] 56140 73151  6032 94052 93048 89338 11069 92072 51559 38158 27351 77323
+##  [841] 31035 33243 53130 13060 13216 54270 49301 27056 38058 64335 50502 61007
+##  [853] 81065 51504 74305 49069 29151 44120 77449 42094 16102 22206 56165 27439
+##  [865] 92051  1451 69072 94073 78335 13202 29105 78126 50147  7186 19031 57672
+##  [877] 17028 71342 63075 59155 78644 75108 13019 62555 77294 34145 34327 62270
+##  [889] 45224 37169 31150 31157 45191 94058 74128 91666 44131 33003  6149 94067
+##  [901] 44132 82005 64024 64108 13206 91411 25368 62758 67108 61006 31116 16089
+##  [913] 84091 69381 62764 44209 91338 33422 35275 49015 91286 17093 39198 81070
+##  [925] 27580 81038 31293 45203 80717 93053 44003 60116 13203 32013 68287 37009
+##  [937] 31480 57227 45285 91421 37067 60382 44195 88196 11262 94059 78586 78545
+##  [949] 13087 95355 13107 77118 44172 63302 55398 42110 54115 77067 76681 33162
+##  [961] 92032 34039 42019 85019 33013 31297 92071 33104 33069 76231 56053 30321
+##  [973] 59163 94080 17457  1043 78350 22362 60310 51074 35021 75111 86041 94042
+##  [985] 59392 76532 54357 19073 74096 26198 56075 13075 44203 10297 45302 60009
+##  [997] 66149 85081 95218 59014 54304 72154 77121 73031 13102 95527  2408 73328
+## [1009] 15120 91659 13014 34022 88413 69268 60639 78389 17291 74067 91339 59220
+## [1021] 32107 62318 74116 99109 93078 31182 77350 77296 95210 73084 59449 38337
+## [1033] 62563 57018 29051 91216 31056 54329 31203 77307 91425 31458 73257 31506
+## [1045] 31120 31417 88367 54222 77258 81170 29189 31263 10387 43157  2303 81144
+## [1057] 44110 25462 62811 31391 15266 78588 33227 44154 77373 73298 38565 34128
+## [1069] 38530 33067 31107 38517 78194 31104 88327 57443 41031 59626 38151 57534
+## [1081] 33397 56023 77122 74267 13081 57160 44057 73272 56178 33437 70550 31389
+## [1093] 73087 26289 31079 49018 69243 94079 31507  1160 71543 45232 35360 26347
+## [1105] 39265 51506 69117 77514 56184 49021 31240 95213 17463 38540 33039 35281
+## [1117] 71176 38377 31098 64062 72264 38495 35152 31433 44055 14228 87014 27140
+## [1129] 44024 34300 59279 65059 33312 12247 53146 38547 59043 91631 38528 14100
+## [1141] 16358 75105 92007 44113 78029 73181 69009 22028 29103 17142 86222 35173
+## [1153] 64348 53271 13047 77384 41194 37072  1376 76178  4088 17219 56078  4209
+## [1165] 19272  9225 76503 69010 38537 26170 31488  2789 73297 64125 62842 41276
+## [1177] 77053 42275 85222 94033 33032 29043 50041 36088 42207 77075 95500 28303
+## [1189] 83059 31561 60030  6006 19093  9324 69091 27165 91114 59256 73155 91044
+## [1201] 49244 13112 34192 59574 78643 83086 45147 66195 11026 83072 91553 16163
+## [1213] 27517 44194 22197  2381 78190 35069 82142 56091 44137 14366 35251 40331
+## [1225] 60524 53154 31341 73003 76095 77108 59560 35207 62427 78361 42147 65417
+## [1237] 81297  6104 49328 76216 93008 83127 51573 11076 62350 74042 31451 16113
+## [1249] 38176 44151 34058 69283 95637 37185 49127 28062 80379 95574 78238 76057
+## [1261] 62215 76561 59650  6161 45315 91275 93001 74241 62073 54578 73034 82134
+## [1273] 49267 93063 76705 54482 72231 93030 22215 88429 40279 59523 27487 74119
+## [1285] 12148 13114 69202 25020 86214  6012 91122 60034  6159 57582 59172 84141
+## [1297] 60372  3310 66136 78575  1248 69100 91312 84039 44188 29039 76758 84092
+## [1309] 45142 25222 17434 59656 33248 59428 49333 83150 83099 76475 25212 66049
+## [1321] 34301 77291 49323 60700 43268 77306  1422 27003 35363 35068 78118 62727
+## [1333] 59329 68218 24299 73329 60001 89464 91649 91587 60277 59178 59152 27048
+## [1345] 60309 14327 60088 83069 40056 80213 62846 54090 60591 58059 82123 65198
+## [1357] 76718 60633 67378  1099 64410 68066 35066 60295 28223 76594 38474 62178
+## [1369] 62724
+```
+
+
+---
+
+
+background-image: url("https://media.giphy.com/media/ZgSDX7fstahz8kbhzZ/giphy.gif")
+class: bottom
+
+### Allégez-le !
+
+* retirez les variables inutiles ;
+* supprimez les variables redondantes ;
+* filtrez les valeurs non pertinentes ?
+* retirez les doublons, avec `distinct()`.
+
+
+---
+
+## Créez des variables manquantes
+
+* sur la durée du trajet ?
+* sur le jour de la semaine ?
+* sur un test (est-ce que le département de départ est le même que le département d'arrivée) ?
+
+
+```r
+library(lubridate)
+
+# créons une nouvelle variable où stocker notre jeu de données étendu
+covoit_2 &lt;- covoit %&gt;%  mutate(jour_semaine_depart = wday(journey_start_datetime, label = TRUE,
+                                                          abbr= FALSE,
+                                                          week_start = getOption("lubridate.week.start", 1)))
+?wday
+table(covoit_2$jour_semaine_depart)
+```
+
+```
+## 
+##    lundi    mardi mercredi    jeudi vendredi   samedi dimanche 
+##    11731    12660    11290    14394    10899     1246      780
+```
+
+
+---
+
+## Jetez un oeil à la distribution des variables
+
+Vous pouvez utiliser `table()` mais vous pouvez aussi tenter une visualisation rapide.
+
+La fonction `qplot()` de `{base}` permet de générer rapidement un graph quand une variable lui est passé en argument :
+
+
+```r
+qplot(covoit_2$jour_semaine_depart)
+```
+
+![](index_files/figure-html/qplot_covoit_jour-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+background-image: url("https://media.giphy.com/media/o1I8DMW1hVtAI/giphy.gif")
+class: center, top, inverse
+
+# 3. De la question journalistique à la fonction informatique
+
+---
+
+background-image: url("https://media.giphy.com/media/n8SkNR77udWlG/giphy.gif")
+class: center, top
+
+## Quelles questions vous viennent spontanément face à ce jeu de données ?
+
+---
+
+## Méthode : formuler en termes de dimensions
+
+R et le `{tidyverse}` en particulier envisage les jeux de données suivant trois dimensions : **variables**, **observations** et **valeurs**.
+
+Dès lors, approcher journalistiquement un jeu de données va consister à raisonner *"à l'intérieur"* des dimensions disponibles et suivant leurs limites.
+
+Ici :
+* chaque observation est un **trajet** : nous devrons donc raisonner à cette échelle ;
+* chaque variable décrit les caractéristiques de ce trajet en terme de temps, espace ou voyageur·es ;
+* les valeurs se réfèrent à différentes échelles du trajet : échelles de temps (jour, mois, heure, semaine), d'espace (point, ville, département, pays) et de déplacement (départ / arrivée).
+
+---
+
+background-image: url("https://media.giphy.com/media/l0MYrkfKA0gxwqUNO/giphy.gif")
+class: center, top
+
+### Passons maintenant à la traduction.
+
+Reformulez les questions listées en utilisant uniquement des dimensions du jeu de données étudié.
+
+---
+
+## Méthode : traduire en termes de fonctions
+
+Une fois votre question formulée, il s'agit de lister les préalables nécessaires.
+
+**Chaque besoin appellera une fonction qui traduira une opération logique** :
+* se concentrer sur des observations : `filter()` ;
+* se concentrer sur des variables : `select()` ;
+* calculer pour chaque observation : `mutate()` ;
+* calculer pour tout le jeu de données : `group_by() %&gt;% summarise()` ;
+* etc.
+
+--
+
+### Allez hop, on traduit !
+
+---
+
+background-image: url("https://media.giphy.com/media/l2SpUEiwphoktXT4Q/giphy.gif")
+class: center, top, inverse
+
+# 4. Compléter vos données
+
+---
+
+## cbind / rbind
+
+La première solution simple pour compléter vos données consiste à y adjoindre des données de même format.
+
+Dans le cas de la base preuve de covoiturage, le jeu est mensuel. Vous pouvez donc le compléter avec un `rbind()`.
+
+**ATTENTION** : vous ne pouvez adjoindre que deux bases ayant le même nombre, type et nom de variable. Il faudra donc joindre les jeux avant de réalier les opérations de nettoyage.
+
+Heureusement, vous pouvez intégrer `rbind()` dans votre pipeline.
+
+---
+
+## Les jointures : principes généraux
+
+
+.pull-left[La jointure est l'opération consistant à rapprocher deux jeux de données sur la base d'une ou plusieurs variable(s) commune(s), appelée(s) **clef()s**.
+
+Assurée par la fonction `merge()` dans `{base}`, elle trouve son équivalent dans le package `{dplyr}` avec les fonctions `*_join()`.
+
+---
+
+### Les fonctions `*_join`
+
+.pull-left[Les fonctions `*_join()` fonctionnent toutes selon le même principe :
+* les premiers arguments sont deux tables **disposant d'une variable de même type** dont tout ou partie des valeurs sont communes ;
+* le troisième argument est la clef qui peut être formulée de deux manières :
+  * une chaîne de caractère : `by = "var"`, si les variables ont le même nom ;
+  * un vecteur contenant les couples de variables : `by = c("ville" = "commune")`.
+
+L'argument `by` peut recevoir plusieurs clefs.]
+
+
+.pull-right[#### Les différentes jointures
+![](./img/jointures.png)
+Source : [RStudio Cheatsheets](https://github.com/rstudio/cheatsheets).]
+
+---
+
+### Exemple avec `left_join()`
+
+
+---
+
+background-image: url("https://media.giphy.com/media/LtyywqYw5NgNq/giphy.gif")
+class: center, top, inverse
+
+# 5. C'est l'heure de l'exercice
+
+---
+
+background-image: url("https://media.giphy.com/media/9p3JwPF6SPQXu/giphy.gif")
+class: center, top, inverse
+
+## La prochaine fois, nous passons à la visualisation
+
+
+---
+class: inverse, center, middle
+
+# Merci !
+
+
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

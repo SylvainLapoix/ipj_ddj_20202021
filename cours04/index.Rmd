@@ -1,0 +1,253 @@
+---
+title: "IPJ - Datajournalisme"
+subtitle: "Cours 4 : Analyse de données en R"
+author: "Sylvain Lapoix"
+date: "23/11/2020"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+
+---
+
+background-image: url("https://media.giphy.com/media/5s9s1ePdKBV9m/giphy.gif")
+class: center, top, inverse
+
+# 1. Correction de l'exercice
+
+```{r setup, include=FALSE, results='hide', message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(rvest)
+
+knitr::opts_chunk$set(warning=FALSE,
+                      message = FALSE)
+
+```
+
+---
+
+background-image: url("https://media.giphy.com/media/6229k5h1JkuvS/giphy.gif")
+class: center, top, inverse
+
+
+## Ce cours vous donnera les clefs de la correction de cet exercice
+
+---
+
+background-image: url("https://media.giphy.com/media/YeTUpy1LtaBY4/giphy.gif")
+class: center, top, inverse
+
+# 2. L'analyse, par où commencer ?
+
+---
+
+## Mettre son jeu de données en ordre
+
+Avant toute **analyse**, faîtes-vou sun bloc de code où :
+1. **charger vos données** ;
+2. **identifier ses dimensions** ;
+3. **renommer les variables**.
+
+Nous travaillerons aujourd'hui sur le jeu de données preuves de covoiturage (édition octobre 2020), [disponible sur data.gouv.fr en scsv](https://www.data.gouv.fr/en/datasets/trajets-realises-en-covoiturage-registre-de-preuve-de-covoiturage/).
+
+```{r load_covoit}
+covoit <- read_csv2("https://www.data.gouv.fr/en/datasets/r/729ce224-33a4-41b1-9422-2586af67de6e")
+
+names(covoit)
+```
+
+---
+
+## Repérez ses forces et ses faiblesses
+
+* y a-t-il des variables mal renseignées ?
+* y a-t-il des variables particulièrement intéressantes ?
+* y a-t-il des variables redondantes ?
+
+
+```{r explo_covoit}
+table(is.na(covoit$journey_id))
+
+unique(covoit$journey_start_insee)
+```
+
+
+---
+
+
+background-image: url("https://media.giphy.com/media/ZgSDX7fstahz8kbhzZ/giphy.gif")
+class: bottom
+
+### Allégez-le !
+
+* retirez les variables inutiles ;
+* supprimez les variables redondantes ;
+* filtrez les valeurs non pertinentes ?
+* retirez les doublons, avec `distinct()`.
+
+
+---
+
+## Créez des variables manquantes
+
+* sur la durée du trajet ?
+* sur le jour de la semaine ?
+* sur un test (est-ce que le département de départ est le même que le département d'arrivée) ?
+
+```{r jour_covoit}
+library(lubridate)
+
+# créons une nouvelle variable où stocker notre jeu de données étendu
+covoit_2 <- covoit %>%  mutate(jour_semaine_depart = wday(journey_start_datetime, label = TRUE,
+                                                          abbr= FALSE,
+                                                          week_start = getOption("lubridate.week.start", 1)))
+?wday
+table(covoit_2$jour_semaine_depart)
+```
+
+
+---
+
+## Jetez un oeil à la distribution des variables
+
+Vous pouvez utiliser `table()` mais vous pouvez aussi tenter une visualisation rapide.
+
+La fonction `qplot()` de `{base}` permet de générer rapidement un graph quand une variable lui est passé en argument :
+
+```{r qplot_covoit_jour, fig.height = 5}
+qplot(covoit_2$jour_semaine_depart)
+```
+
+
+
+---
+
+background-image: url("https://media.giphy.com/media/o1I8DMW1hVtAI/giphy.gif")
+class: center, top, inverse
+
+# 3. De la question journalistique à la fonction informatique
+
+---
+
+background-image: url("https://media.giphy.com/media/n8SkNR77udWlG/giphy.gif")
+class: center, top
+
+## Quelles questions vous viennent spontanément face à ce jeu de données ?
+
+---
+
+## Méthode : formuler en termes de dimensions
+
+R et le `{tidyverse}` en particulier envisage les jeux de données suivant trois dimensions : **variables**, **observations** et **valeurs**.
+
+Dès lors, approcher journalistiquement un jeu de données va consister à raisonner *"à l'intérieur"* des dimensions disponibles et suivant leurs limites.
+
+Ici :
+* chaque observation est un **trajet** : nous devrons donc raisonner à cette échelle ;
+* chaque variable décrit les caractéristiques de ce trajet en terme de temps, espace ou voyageur·es ;
+* les valeurs se réfèrent à différentes échelles du trajet : échelles de temps (jour, mois, heure, semaine), d'espace (point, ville, département, pays) et de déplacement (départ / arrivée).
+
+---
+
+background-image: url("https://media.giphy.com/media/l0MYrkfKA0gxwqUNO/giphy.gif")
+class: center, top
+
+### Passons maintenant à la traduction.
+
+Reformulez les questions listées en utilisant uniquement des dimensions du jeu de données étudié.
+
+---
+
+## Méthode : traduire en termes de fonctions
+
+Une fois votre question formulée, il s'agit de lister les préalables nécessaires.
+
+**Chaque besoin appellera une fonction qui traduira une opération logique** :
+* se concentrer sur des observations : `filter()` ;
+* se concentrer sur des variables : `select()` ;
+* calculer pour chaque observation : `mutate()` ;
+* calculer pour tout le jeu de données : `group_by() %>% summarise()` ;
+* etc.
+
+--
+
+### Allez hop, on traduit !
+
+---
+
+background-image: url("https://media.giphy.com/media/l2SpUEiwphoktXT4Q/giphy.gif")
+class: center, top, inverse
+
+# 4. Compléter vos données
+
+---
+
+## cbind / rbind
+
+La première solution simple pour compléter vos données consiste à y adjoindre des données de même format.
+
+Dans le cas de la base preuve de covoiturage, le jeu est mensuel. Vous pouvez donc le compléter avec un `rbind()`.
+
+**ATTENTION** : vous ne pouvez adjoindre que deux bases ayant le même nombre, type et nom de variable. Il faudra donc joindre les jeux avant de réalier les opérations de nettoyage.
+
+Heureusement, vous pouvez intégrer `rbind()` dans votre pipeline.
+
+---
+
+## Les jointures : principes généraux
+
+
+.pull-left[La jointure est l'opération consistant à rapprocher deux jeux de données sur la base d'une ou plusieurs variable(s) commune(s), appelée(s) **clef()s**.
+
+Assurée par la fonction `merge()` dans `{base}`, elle trouve son équivalent dans le package `{dplyr}` avec les fonctions `*_join()`.
+
+---
+
+### Les fonctions `*_join`
+
+.pull-left[Les fonctions `*_join()` fonctionnent toutes selon le même principe :
+* les premiers arguments sont deux tables **disposant d'une variable de même type** dont tout ou partie des valeurs sont communes ;
+* le troisième argument est la clef qui peut être formulée de deux manières :
+  * une chaîne de caractère : `by = "var"`, si les variables ont le même nom ;
+  * un vecteur contenant les couples de variables : `by = c("ville" = "commune")`.
+
+L'argument `by` peut recevoir plusieurs clefs.]
+
+
+.pull-right[#### Les différentes jointures
+![](./img/jointures.png)
+Source : [RStudio Cheatsheets](https://github.com/rstudio/cheatsheets).]
+
+---
+
+### Exemple avec `left_join()`
+
+
+---
+
+background-image: url("https://media.giphy.com/media/LtyywqYw5NgNq/giphy.gif")
+class: center, top, inverse
+
+# 5. C'est l'heure de l'exercice
+
+---
+
+background-image: url("https://media.giphy.com/media/9p3JwPF6SPQXu/giphy.gif")
+class: center, top, inverse
+
+## La prochaine fois, nous passons à la visualisation
+
+
+---
+class: inverse, center, middle
+
+# Merci !
+
+
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com).
+
+
