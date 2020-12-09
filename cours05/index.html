@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>IPJ - Datajournalisme</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Sylvain Lapoix" />
+    <meta name="date" content="2020-04-12" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# IPJ - Datajournalisme
+## Cours 5 : Visualiser des données en R
+### Sylvain Lapoix
+### 04/12/2020
+
+---
+
+
+background-image: url("https://media.giphy.com/media/yjI5G3pE3NH3O/giphy.gif")
+class: center, top, inverse
+
+# 1. Une grammaire pour les graphs
+
+
+
+
+
+---
+
+## Aux origines de {ggplot2}
+
+.pull-left[
+Le package `{ggplot2}` repose sur l'article [A layered grammar of graphics](https://vita.had.co.nz/papers/layered-grammar.html), publié en 2010 par Hadley Wickham (créateur du {tidyverse}). Cette publication se veut une version améliorée et open source du Grammar of graphics, publié en 2006 par Leland Wilkinson.
+
+Ces deux études poursuivaient le même but : formaliser la production des graphs comme une série d'opérations simples.
+]
+
+.pull-right[
+![](./img/wilkinson_vs_wickham.png)
+
+
+Extrait de A layered grammar of graphics, Wickham, 2010.
+]
+
+---
+
+## Une construction "par couche"
+
+.pull-left[
+![](./img/layered_grammar_graphics.png)
+]
+
+.pull-right[
+1. les **data** ;
+2. les **aesthetics** : correspondance entre données et dimensions du graphique (axes, couleurs, formes, etc.) ;
+3. les **échelles** ;
+4. les **geoms** : objets géométriques représentants les points de données (points, lignes, barres, cercles, etc.) ;
+5. les **statistics** : indications statistiques dans la dataviz ;
+6. les **facets** : sous-graphs 
+7. le **système de coordonnées** : cartésien ou polaire ? (nous verrons à quoi ça sert)
+
+]
+
+---
+
+### Les principales composantes de la Grammar of Graphics
+
+![](./img/gg_components.png)
+
+---
+
+### La "grammar of graphics" en pratique
+
+`{ggplot2}` se veut une traduction opérationnelle des concepts de la *layered grammar of graphics*.
+
+En pratique, il suffit pour produire un graph avec cette librairie d'un minimum de trois éléments (**data**, **geom** et **aesthetics**).
+
+
+
+```r
+ggplot(data = &lt;DATA&gt;) + 
+  &lt;GEOM_FUNCTION&gt;(aes(&lt;MAPPINGS&gt;))
+```
+
+
+#### mapping
+Dans le schéma ci-dessus, `mappings` se réfère au fait d'associer une dimension du jeu de données à une dimension esthétique de la dataviz.
+
+En informatique, on parle de *"mappage"* et de *"mapper"* pour décrire l'association de deux données d'ensembles différents.
+
+---
+
+#### Exemple : cigares et cigarillos
+
+Jetons un oeil rapide à la liste des produits vendus sous l'étiquette tabac autre que les cigarettes avec la base [Produits du tabac et produits connexes déclarés sur le marché français](https://www.data.gouv.fr/fr/datasets/produits-du-tabac-et-produits-connexes-declares-sur-le-marche-francais), publiée par l'Anses sur data.gouv.fr :
+
+
+```r
+cigares &lt;- read_csv2("./data/liste-fr-autres-produits.csv") %&gt;% 
+  mutate(Longueur_Produit = as.double(Longueur_Produit),
+         Diamètre_Produit = as.double(Diamètre_Produit))
+
+cigares %&gt;% ggplot() +
+  geom_point(aes(x = Longueur_Produit, y = Diamètre_Produit,
+                 color = Type_Produit))
+```
+
+![](index_files/figure-html/exemple_gg_cigares&amp;co-1.png)&lt;!-- --&gt;
+
+
+---
+
+### Les aesthetics disponibles
+
+Outre les deux axes, `x` et `y`, `{ggplot2}` donne accès à toutes les dimensions visuelles du graph via les aesthetics :
+* `color` : pour la couleur des points ;
+* `fill` : pour le remplissage ;
+* `alpha` : pour l'opacité ;
+* `size`: la taille ;
+* `shape` : pour la forme ;
+* `stroke` : la continuité d'un trait.
+
+
+---
+
+### Les aesthetics non mappées
+
+Les dimensions ne sont pas obligatoirement mappée à une variable. Elles peuvent aussi se voir attribuer une valeur arbitraire. Pour cela, il suffit de les renseigner en dehors de l'objet `aes()`. Par exemple :
+
+
+```r
+cigares %&gt;% ggplot() +
+  geom_point(aes(x = Longueur_Produit, y = Diamètre_Produit,
+                 color = Type_Produit), alpha = 0.3, size = 0.5)
+```
+
+![](index_files/figure-html/aes_non_mappees-1.png)&lt;!-- --&gt;
+
+
+---
+
+background-image: url("https://media.giphy.com/media/kcCkg4ao1PTCQiMkpC/giphy.gif")
+class: center, top, inverse
+
+# 2. Les `geoms` de {ggplot}
+
+---
+
+## A chaque `geom` son usage
+
+Chaque `geometry` disponible dans `{ggplot2}` permet de traiter certains types de données et pas d'autres. Nous distinguerons notamment trois grandes catégories :
+1. **les variables catégorielles** : c'est-à-dire les variables qui distinguent un nombre limité de valeurs se rapportant à des groupes Elles peuvent être :
+  * **ordonnées** ;
+  * **non ordonnées**.
+2. **les variables discrètes** : c'est-à-dire les variables numériques dont les valeurs sont en nombre limité sur une échelle ;
+3. **les variables continues** : c'est-à-dire les variables dont les valeurs numériques peuvent prendre un nombre infini de valeur sur une échelle continue (c'est aussi le cas des heures et dates)
+
+---
+
+## Fonctionnement générique des `geom`
+
+Les `geometry` sont ajoutées juste après les données par couche.
+
+Leur forme générique est toujours : `geom_*` où `*` désigne la forme géométrique ajoutée.
+
+Les arguments sont énumérés :
+* dans un objet `aes()` quand ils sont mappés à une variable ;
+* dans la parenthèse quand on souhaite leur assigner une valeur fixe.
+
+Outre les `aesthetics` évoquées plus haut, deux arguments peuvent être utiles :
+* `na.rm` : permet de rendre silencieuse la suppression des NAs ;
+* `position` : permet de spécifier la position des éléments géométriques entre eux (notamment `geom_col()`).
+
+
+---
+
+### Que peut-on faire avec un jeu de données ?
+
+Penchons-nous sur les [indicateurs de suivi de l’épidémie de COVID-19](https://www.data.gouv.fr/fr/datasets/indicateurs-de-suivi-de-lepidemie-de-covid-19/) publiés quotidiennement par le Ministère de la Santé.
+
+
+
+
+```r
+covid &lt;- read_csv("./data/table-indicateurs-open-data-france.csv")
+
+head(covid)
+```
+
+```
+## # A tibble: 6 x 5
+##   extract_date tx_incid     R taux_occupation_sae tx_pos
+##   &lt;date&gt;          &lt;dbl&gt; &lt;dbl&gt;               &lt;dbl&gt;  &lt;dbl&gt;
+## 1 2020-03-18      NA       NA                15.2     NA
+## 2 2020-03-19       5.57    NA                19.8     NA
+## 3 2020-03-20       8.40    NA                25.6     NA
+## 4 2020-03-21      11.0     NA                28.7     NA
+## 5 2020-03-22      13.6     NA                33.1     NA
+## 6 2020-03-23      18.3     NA                41.1     NA
+```
+
+
+---
+
+### geom_line
+
+`geom_line` trace une ligne entre chaque point de données.
+
+Dans l'imaginaire collectif, il invoque deux notions :
+* la continuité dans le temps (suivant l'axe des x) ;
+* la continuité d'un phénomène.
+
+
+```r
+covid %&gt;% ggplot(aes(x = extract_date)) +
+  geom_line(aes(y = tx_incid), color = "blue") +
+  geom_line(aes(y = taux_occupation_sae), linetype = "longdash", color = "red")
+```
+
+![](index_files/figure-html/covid_geom_line-1.png)&lt;!-- --&gt;
+
+---
+
+### geom_point
+
+`geom_point` trace un point par croisement entre deux coordonnées sur les axes `x` et `y`.
+
+A ce titre, il permet d'étudier la relation entre deux variables (donc deux dimensions d'un même phénomène).
+
+Prenons le jeu de données "cigarettes" pour regarder la relation entre les émissions de goudron et de nicotine :
+
+
+```r
+cigarettes &lt;- read_csv2("./data/liste-fr-cigarettes.csv")
+
+glimpse(cigarettes)
+```
+
+```
+## Rows: 2,960
+## Columns: 25
+## $ Marché_National_Produit                 &lt;chr&gt; "FR", "FR", "FR", "FR", "FR",…
+## $ Catégorie_Produit                       &lt;chr&gt; "Produit du tabac", "Produit …
+## $ Type_Produit                            &lt;chr&gt; "Cigarette", "Cigarette", "Ci…
+## $ Code_Référence                          &lt;chr&gt; "1637 ORIGINE [4A27B949A67924…
+## $ Date_Dernière_Mise_A_Jour_Du_Dossier    &lt;chr&gt; "30/3/2020 11:27:00", "17/2/2…
+## $ Nom_Marque_Produit                      &lt;chr&gt; "1637", "Alluvé", "Alluvé", "…
+## $ `Nom_Sous-type_Marque_Produit`          &lt;chr&gt; "Origine", "tabac", "white", …
+## $ Filtre_Produit                          &lt;chr&gt; "filtre", "filtre", "filtre",…
+## $ Unités_Conditionnement_Produit          &lt;dbl&gt; 2000, 4000, 4000, 2000, 2000,…
+## $ Type_Conditionnement_Produit            &lt;chr&gt; "Boîte à couvercle supérieur …
+## $ Type_Numéro_Produit                     &lt;chr&gt; "EAN", "GTIN", "GTIN", "SKU",…
+## $ Numéro_Produit                          &lt;chr&gt; "3258170830010", "00000042400…
+## $ Date_Notification                       &lt;chr&gt; "5/9/2019 08:14:38", "19/11/2…
+## $ Date_Lancement_Produit                  &lt;chr&gt; "9/9/2019 00:00:00", "28/8/20…
+## $ Longueur_Produit                        &lt;dbl&gt; 8400, 10000, 10000, 8300, 830…
+## $ Diamètre_Produit                        &lt;dbl&gt; 783, 540, 540, 779, 779, 780,…
+## $ Poids_Produit                           &lt;dbl&gt; 83000, 58000, 56000, 99400, 9…
+## $ Poids_Tabac_Produit                     &lt;chr&gt; "580.00", "420.00", "400.00",…
+## $ Longueur_Filtre_Produit                 &lt;chr&gt; "27.00", "30.00", "30.00", "2…
+## $ Ventilation_Filtre_Cigarette            &lt;chr&gt; "15.00", "30.00", "65.00", "4…
+## $ Baisse_Pression_Filtre_Cigarette_Fermé  &lt;dbl&gt; 13500, 21000, 27000, 16500, 1…
+## $ Baisse_Pression_Filtre_Cigarette_Ouvert &lt;dbl&gt; 12000, 14000, 12000, 11000, 1…
+## $ Émission_Goudron                        &lt;dbl&gt; 823, 600, 300, 900, 900, 900,…
+## $ Émission_Nicotine                       &lt;chr&gt; "0.56", "0.70", "0.30", "0.90…
+## $ Émission_CO                             &lt;dbl&gt; 992, 500, 200, 800, 800, 900,…
+```
+
+---
+
+#### Exemple de graph
+
+
+```r
+cigarettes %&gt;%
+  mutate(Émission_Nicotine = as.double(Émission_Nicotine)) %&gt;% 
+  ggplot() +
+  geom_point(aes(x = Émission_Goudron, y = Émission_Nicotine))
+```
+
+![](index_files/figure-html/cigarette_point-1.png)&lt;!-- --&gt;
+
+
+---
+
+#### Attention à l'overplotting !
+
+
+```r
+cigarettes %&gt;% mutate(Émission_Nicotine = as.double(Émission_Nicotine)) %&gt;% 
+  ggplot() +
+  geom_point(aes(x = Émission_Goudron, y = Émission_Nicotine, color =  Nom_Marque_Produit))
+```
+
+![](index_files/figure-html/overplotting_geom_point-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+#### Exemple de "tous les graphs ne marchent pas avec toutes les données"
+
+
+
+```r
+covid %&gt;% ggplot() +
+  geom_point(aes(x = taux_occupation_sae, y = tx_incid, color = extract_date))
+```
+
+![](index_files/figure-html/covid_geom_point-1.png)&lt;!-- --&gt;
+
+---
+
+### geom_bar
+
+Le `geom_bar` trace un graphique de distribution sur une seule dimension. Autrement dit, il calcule d'abord le nombre d'observation par tranches de valeur pour la variable mappée sur `x`. En clair, il visualise un `count()`.
+
+#### Histogramme
+
+Quand on mappe `x` sur une variable continue, il produit un histogramme (dont l'échelle et les fourchettes sont calculées de manière automatique) :
+
+
+```r
+cigarettes %&gt;% mutate(Émission_Nicotine = as.double(Émission_Nicotine)) %&gt;% 
+  ggplot() +
+  geom_bar(aes(x = Émission_Goudron))
+```
+
+![](index_files/figure-html/geom_bar_histogramme-1.png)&lt;!-- --&gt;
+
+
+---
+
+#### Graphique en barre
+
+`geom_bar` peut également mapper une variable catégorielle. Dans ce cas, la fonction tracera une colonne par valeur de la variable. Dans ce cas, on ne parle pas d'histogramme mais de graphique de distribution en colonne :
+
+
+```r
+cigares %&gt;% ggplot() +
+  geom_bar(aes(x = Type_Produit))
+```
+
+![](index_files/figure-html/geom_bar_distrib-1.png)&lt;!-- --&gt;
+
+
+---
+
+### geom_col
+
+La fonction `geom_col` trace une colonne par valeur d'une variable catégorielle passée en `x` dont la hauteur dépend de la variable mappée en `y`. Elle attend donc une variable continue sur l'axe des `y` :
+
+
+```r
+cigares %&gt;% 
+  group_by(Type_Produit) %&gt;%
+  summarise(poids_moyen = mean(Poids_Produit)/1000) %&gt;% 
+  ggplot() +
+  geom_col(aes(x = Type_Produit, y = poids_moyen))
+```
+
+![](index_files/figure-html/geom_col-1.png)&lt;!-- --&gt;
+
+
+---
+
+
+
+background-image: url("https://media.giphy.com/media/RmfzOLuCJTApa/giphy.gif")
+class: center, top
+
+#### Et encore beaucoup d'autres avec leurs options que vous pourrez découvrir en fouinant du côté de la doc.
+
+.footnote[Et notamment du [site officiel de ggplot](https://ggplot2.tidyverse.org/).]
+
+---
+
+
+background-image: url("https://media.giphy.com/media/js0dt5JLCU01bvlt7d/giphy.gif")
+class: center, top, inverse
+
+# 3. Rendons tout ça un peu plus joli
+
+---
+
+### Aparté : stocker un graph
+
+Comme tout ce que ous manipulez dans `R`, les graphiques générés par les fonctions de `{ggplot2}` sont des objets. Ils peuvent donc être stockés dans des variables :
+
+
+```r
+cigares_gpoint &lt;- cigares %&gt;% ggplot() +
+  geom_point(aes(x = Longueur_Produit, y = Diamètre_Produit,
+                 color = Type_Produit))
+
+cigares_gpoint
+```
+
+![](index_files/figure-html/stocker_graph-1.png)&lt;!-- --&gt;
+
+---
+
+### Un peu de couleur !
+
+Vous pouvez manipuler les couleurs de plusieurs manières.
+
+Si le mapping permet de faire correspondre un code couleur à une valeur, de nombreuses options et librairies vous permettent de choisir des échelles de couleur précalculées ou à paramétrer.
+
+---
+
+#### Viridis
+
+Une des librairies les plus célèbres est `{viridis}`, qui propose plusieurs type d'échelles suivant les besoins (continues, catégorielles, adaptées aux diverses formes de daltonisme...).
+
+Plus de détails et d'exemples dans [la page d'introduction à ce package](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html).
+
+
+```r
+library(viridis)
+
+cigares_gpoint + scale_color_viridis(discrete = TRUE)
+```
+
+![](index_files/figure-html/ggplot_viridis-1.png)&lt;!-- --&gt;
+
+
+---
+
+#### `{RColorBrewer}`
+
+
+```r
+library(RColorBrewer)
+
+cigares_gpoint + scale_colour_brewer(palette = "Set1")
+```
+
+![](index_files/figure-html/color_brewer-1.png)&lt;!-- --&gt;
+
+---
+
+### `theme()` : objet à tout paramétrer
+
+L'objet `theme()` permet de régler la majorité des aspects visuels non mappés de vos graphs : fonds, axes, textes, "ticks", titres et sous-titres, etc.
+
+Les arguments de `theme()` doivent être paramétrés selon leur type :
+* `element_line()` ;
+* `element_text()` ;
+* `element_rect()`, etc.
+* `element_blank()` quand vous voulez les supprimer.
+
+---
+
+#### `theme()` : exemple
+
+
+```r
+cigares_gpoint +
+  labs(title = "Rapport longueur ~ diamètre des produits du tabac autres que les cigarettes") +
+  theme(
+  legend.position = "none",
+  panel.grid.major = element_line(colour = "grey50"),
+  plot.background = element_rect(fill = "grey")
+)
+```
+
+![](index_files/figure-html/ggplot_theme-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+background-image: url("https://media.giphy.com/media/l378BzHA5FwWFXVSg/giphy.gif")
+class: center, top, inverse
+
+# 4. Démultiplions nos graphs avec les facets
+
+---
+
+## `facet_*`
+
+Les fonctions de `facet` vous permette de créer un graph par valeur de la variable choisie, suivant les paramètres définis en amont.
+
+En pratique, cela permet d'observer l'effet d'une variable sur votre graph.
+
+Il existe deux fonctions principales :
+* `facet_wrap()` qui prend une seule variable en facet et va organiser les graphs en lignes et colonnes ;
+* `facet_grid()` qui prend une ou deux variables en facet et les dispose en ligne et colonne suivant l'ordre où elles sont appelées.
+
+---
+
+### `facet_wrap()`
+
+
+```r
+cigarettes %&gt;%
+  mutate(Émission_Nicotine = as.double(Émission_Nicotine)) %&gt;% 
+  ggplot() +
+  geom_point(aes(x = Émission_Goudron, y = Émission_Nicotine)) +
+  facet_wrap( ~ Filtre_Produit)
+```
+
+![](index_files/figure-html/cigarettes_facet_filtres-1.png)&lt;!-- --&gt;
+
+---
+
+### `facet_grid()`
+
+
+```r
+library(lubridate)
+
+covoit &lt;- read_csv2("https://www.data.gouv.fr/en/datasets/r/729ce224-33a4-41b1-9422-2586af67de6e") %&gt;% 
+  mutate(journey_start_wday = wday(journey_start_datetime, label = TRUE, abbr= FALSE,
+                                   week_start = getOption("lubridate.week.start", 1)))
+
+covoit %&gt;% 
+  filter(journey_start_country != "France" | journey_end_country != "France" ) %&gt;% 
+  ggplot(aes(x = journey_start_wday, fill = journey_start_wday)) +
+  geom_bar() +
+  facet_grid(journey_start_country ~ journey_end_country) +
+  theme(legend.position = "none")
+```
+
+![](index_files/figure-html/covoit_facet_grid-1.png)&lt;!-- --&gt;
+
+
+---
+
+background-image: url("https://media.giphy.com/media/26gYPjuK6O0H63GyQ/giphy.gif")
+class: center, top, inverse
+
+# 5. C'est l'heure de l'exercice
+
+---
+
+
+## Trouvez-moi un sujet dans la base covoiturage (bis)
+
+.center[
+![](https://media.giphy.com/media/3o85xuRNcQRoe81z56/giphy.gif)
+]
+
+Je vous demande une proposition d'un feuillet et les calculs qui vous y ont mené dans un .Rmd suivant la nomenclature habituelle.
+
+Vous y ajouterez des visualisations illustrant votre démarche et votre choix de sujet (au moins 3).
+
+**Vous avez jusqu'au 16/12/2020 à minuit (heure du mail)**. Au delà, il vous sera assigné la note de 0 pour cette évaluation.
+
+---
+
+background-image: url("https://media.giphy.com/media/415fSJMN3avCg/giphy.gif")
+class: center, top, inverse
+
+## La prochaine fois, on boucle la méthodo
+
+
+---
+class: inverse, center, middle
+
+# Merci !
+
+
+Contact : [sylvainlapoix@gmail.com](mailto:sylvainlapoix@gmail.com)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
